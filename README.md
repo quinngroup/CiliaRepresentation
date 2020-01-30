@@ -11,9 +11,10 @@ Top-level directories correspond to **modules** in the project. Specifically:
 
 Within a module directory, top-level files should include the main driver file. Subdirectories should include:
 
-- **exp**: a directory containing all experiment related information for the given module. Experiment data *must* include a `log.txt` file which documents the purpose of the expirement, the naming conventions employed by the experiment, and the corresponding conditions of each trial (e.g. learning rate of X corresponds to lrX.py). Experiment data *may include* stdout capture (either via bash redirection or through the tee command), recorded weights, tf-board event files or anything else deemed relevant.
+- **results**: a directory containing all experiment related information for the given module. Experiment data *must* include a `log.txt` file which documents the purpose of the expirement, the naming conventions employed by the experiment, and the corresponding conditions of each trial (e.g. learning rate of \[X] corresponds to lr\[X].py). Experiment data *may include* stdout capture (either via bash redirection or through the tee command), recorded weights, tf-board event files or anything else deemed relevant.
 - **test_builds**: a drirectory containing all 
 The project modules are designed to be developed in parallel with eachother. Of course, certain dependencies exist, such as the fact that the Appearance module may depend on results from the Processing module, however these do not completely restrict the development of modules in parallel. This is handled through branching. 
+- **exp**: a directory containing bash scripts to run experiments and trials, as well as a manifesto detailing each experiment. Experiment scripts should be of form exp\[X].py where \[X] is the corresponding experiment index. See experiment section for greater detail.
 - (optional) **scripts**: a directory containing any supplementary scripts. May be for testing, debugging or as a component of model operations.
 
 ## Branches
@@ -27,4 +28,15 @@ We use the following branches:
 
 Child/sibling branches may spawn to sub-prototype any of the above branches (e.g. if there are two separate candidates that need to be tested)
 
-## 
+## Experiments
+Experiments can be over basically anything, ranging from stability (not crashing and burning after a single epoch) to hyperparameter tuning through loss optimization. Here is the general experiment lifestyle:
+
+1. An experiment should begin its life as an **Issue**. The issue should be titled Exp\[X]: \[explanatory title] where \[X] is the next available experiment index. That is to say if the most recent experiment was exp17, then the new experiment should be titled Exp18: \[explanatory text]. Generally they will begin as a vague goal (e.g. explore different options for learning rate). Such experiments should be tagged `design`.
+
+2. Design stage experiments should be refined by either the originator of the issue or any other members of the project (e.g. grid-search different learning rate values over \[1e-5 through 9e-5]). After being refined, the tag should be changed to `script-ready`
+
+3.Then, a script must be made for the experiment. The script should be stored in the exp directory following the conventions mentioned above. After a script is made, the manifesto file in the exp directory must be updated to include the details of the newly added edxperiment. Finally the issue tag must be updated and set to `trial-ready`
+
+4. Trial-ready scripts are to be executed on any suitable hardware choice. The primary choice is GCP cloud servers, however alterantive hardware choices are acceptable as well (e.g. a particularly well equipped desktop).
+
+5. Once the trial has been completed as specified by the experiment, the issue must be closed (unless further discussion is required).
