@@ -12,12 +12,12 @@ Top-level directories correspond to **modules** in the project. Specifically:
 Within a module directory, top-level files should include the main driver file. Subdirectories should include:
 
 - **results**: a directory containing all experiment related information for the given module. Experiment data *must* include a `log.txt` file which documents the purpose of the expirement, the naming conventions employed by the experiment, and the corresponding conditions of each trial (e.g. learning rate of \[X] corresponds to lr\[X].py). Experiment data *may include* stdout capture (either via bash redirection or through the tee command), recorded weights, tf-board event files or anything else deemed relevant.
-- **test_builds**: a drirectory containing all 
-The project modules are designed to be developed in parallel with eachother. Of course, certain dependencies exist, such as the fact that the Appearance module may depend on results from the Processing module, however these do not completely restrict the development of modules in parallel. This is handled through branching. 
+- **test_builds**: a directory containing all the various implementations and candidate models for the module. Each file in test_builds should be titled TB\[X] where \[X] is the next available index for test builds. See the test build section below for greater detail. 
 - **exp**: a directory containing bash scripts to run experiments and trials, as well as a manifesto detailing each experiment. Experiment scripts should be of form exp\[X].py where \[X] is the corresponding experiment index. See experiment section for greater detail.
 - (optional) **scripts**: a directory containing any supplementary scripts. May be for testing, debugging or as a component of model operations.
 
 ## Branches
+Certain dependencies exist between modules which can make parallel development challenging, such as the fact that the Appearance module may depend on results from the Processing module, however these do not completely restrict the development of modules in parallel. Parallel development is facilitated through branching.
 We use the following branches:
 
 - **master**: contains the most recent *stable* build of the entire pipeline. 
@@ -40,3 +40,7 @@ Experiments can be over basically anything, ranging from stability (not crashing
 4. Trial-ready scripts are to be executed on any suitable hardware choice. The primary choice is GCP cloud servers, however alterantive hardware choices are acceptable as well (e.g. a particularly well equipped desktop).
 
 5. Once the trial has been completed as specified by the experiment, the issue must be closed (unless further discussion is required).
+
+
+## Test Builds 
+TBD
