@@ -31,7 +31,7 @@ Child/sibling branches may spawn to sub-prototype any of the above branches (e.g
 ## Experiments
 Experiments can be over basically anything, ranging from stability (not crashing and burning after a single epoch) to hyperparameter tuning through loss optimization. Here is the general experiment lifestyle:
 
-1. An experiment should begin its life as an **Issue**. The issue should be titled Exp\[X]: \[explanatory title] where \[X] is the next available experiment index. That is to say if the most recent experiment was exp17, then the new experiment should be titled Exp18: \[explanatory text]. Generally they will begin as a vague goal (e.g. explore different options for learning rate). Such experiments should be tagged `design`.
+1. An experiment should begin its life as an **Issue**. The issue should be titled Exp\[X]: \[explanatory title] where \[X] is the next available experiment index. That is to say if the most recent experiment was exp17, then the new experiment should be titled Exp18: \[explanatory title]. Generally they will begin as a vague goal (e.g. explore different options for learning rate). Such experiments should be tagged `design`.
 
 2. Design stage experiments should be refined by either the originator of the issue or any other members of the project (e.g. grid-search different learning rate values over \[1e-5 through 9e-5]). After being refined, the tag should be changed to `script-ready`
 
