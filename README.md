@@ -3,11 +3,18 @@
 # Project Structure
 
 ## Directories
-Top-level directories correspond to **modules** in the project. Within a module directory, top-level files should include the main driver file. Subdirectories should include:
+Top-level directories correspond to **modules** in the project. Specifically:
+
+-**processing**
+-**appearance**
+-**dynamics**
+
+Within a module directory, top-level files should include the main driver file. Subdirectories should include:
 
 - **exp**: a directory containing all experiment related information for the given module. Experiment data *must* include a `log.txt` file which documents the purpose of the expirement, the naming conventions employed by the experiment, and the corresponding conditions of each trial (e.g. learning rate of X corresponds to lrX.py). Experiment data *may include* stdout capture (either via bash redirection or through the tee command), recorded weights, tf-board event files or anything else deemed relevant.
 - **test_builds**: a drirectory containing all 
 The project modules are designed to be developed in parallel with eachother. Of course, certain dependencies exist, such as the fact that the Appearance module may depend on results from the Processing module, however these do not completely restrict the development of modules in parallel. This is handled through branching. 
+- (optional) **scripts**: a directory containing any supplementary scripts. May be for testing, debugging or as a component of model operations.
 
 ## Branches
 We use the following branches:
