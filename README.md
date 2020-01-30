@@ -35,7 +35,7 @@ Experiments can be over basically anything, ranging from stability (not crashing
 
 2. Design stage experiments should be refined by either the originator of the issue or any other members of the project (e.g. grid-search different learning rate values over \[1e-5 through 9e-5]). After being refined, the tag should be changed to `script-ready`
 
-3.Then, a script must be made for the experiment. The script should be stored in the exp directory following the conventions mentioned above. After a script is made, the manifesto file in the exp directory must be updated to include the details of the newly added edxperiment. Finally the issue tag must be updated and set to `trial-ready`
+3. Then, a script must be made for the experiment. The script should be stored in the exp directory following the conventions mentioned above. After a script is made, the manifesto file in the exp directory must be updated to include the details of the newly added edxperiment. Finally the issue tag must be updated and set to `trial-ready`
 
 4. Trial-ready scripts are to be executed on any suitable hardware choice. The primary choice is GCP cloud servers, however alterantive hardware choices are acceptable as well (e.g. a particularly well equipped desktop).
 
