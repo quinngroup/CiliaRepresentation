@@ -5,9 +5,9 @@
 ## Directories
 Top-level directories correspond to **modules** in the project. Specifically:
 
--**processing**
--**appearance**
--**dynamics**
+- **processing**
+- **appearance**
+- **dynamics**
 
 Within a module directory, top-level files should include the main driver file. Subdirectories should include:
 
