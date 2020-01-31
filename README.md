@@ -43,4 +43,10 @@ Experiments can be over basically anything, ranging from stability (not crashing
 
 
 ## Test Builds 
-TBD
+Although each module can potentially have test builds, the processing module will most likely not require a rigorous test build process, and hence may be exempt from following this structure. However, the other two modules should implement test builds in the very appropriately named **test_builds** subdirectory of the respective module. Test builds will follow a similar lifecycle to experiments, and may well be considered a special type of experiment. In particular, here is the lifecycle:
+
+1. A test model should begin its life as an **issue**. The issue should be title \[3 Letter Initialism\]\_\[index number\]:\[Full Title\]. Take, for example, the Naturalized VampPrior model. Suppose that we wanted to propose an initial minimal implementation of the model. We'll take the 3 letter initalism to be NVP. Then, the issue title should be `NVP_0:Naturalized VampPrior`. Note the index is 0 because it is a proposal for an *initial* implementation. From here on out, the next proposed variation to NVP would be recorded as `NVP_1:...`. For example, suppose we wanted to propose a modification to the shape of the posterior distributions. Then a viable name could be `NVP_1: Altered Posterior Distributions`. The issue's tag should be set to `model-design`
+
+2. Design progress should be recorded on the original issue and continued until a viable formulation has been reached. Then the issue tag should be set to `model-imp` for model implementation.
+
+3. Next, a python file should be created implementing the model. After this is done, the original issue should be closed. Any further work on the model will either be architectural changes which will be reflected in other test build issues, or as experiments as discussed above. The test build issue may be referenced in other issues, either test build or experiments, to provide a singular history for the model.
