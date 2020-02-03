@@ -62,7 +62,7 @@ parser.add_argument('--schedule', type = int, default=-1, metavar='sp',
                     help='use learning rate scheduler on loss stagnation with input patience')
 parser.add_argument('--seed', type=int, default=None, metavar='s',
                     help='manual random seed (default: None)')
-parser.add_argument('--source', type=str, default=None, metavar='S',
+parser.add_argument('--source', type=str, default='..\..\zainmeekail\local_data\clipcropped', metavar='S',
                     help='directory containing source files')
 parser.add_argument('--test_split', type=float, default=.2, metavar='ts',
                     help='portion of data reserved for testing')
