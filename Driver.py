@@ -1,9 +1,16 @@
 from argparse import ArgumentParser
 from math import ceil
+import matplotlib.colors as colors
+import matplotlib.pyplot as plt
 from NVP import NVP
+from sklearn.cluster import DBSCAN
+from sklearn.manifold import TSNE
+from sklearn.preprocessing import StandardScaler
+import time
 import torch
 from torch.optim import lr_scheduler
 from torch.utils.data import DataLoader, random_split
+from torchsummary import summary
 from torchvision import transforms
 from utils import Datasets
 
@@ -12,6 +19,8 @@ Appearance Module Driver
 
 @author Quinn Wyner
 '''
+
+startTime = time.time()
 
 #Parses arguments passed from command line
 parser = ArgumentParser(description='AppearanceDriver')
@@ -23,6 +32,8 @@ parser.add_argument('--dataset', type=str, default=None, metavar='D',
                     help='dataset selection for training and testing')
 parser.add_argument('--dbscan', action='store_true', default= False,
                     help='to run dbscan clustering')      
+parser.add_argument('--epochs', type=int, default=10, metavar='N',
+                    help='number of epochs to train (default: 10)')
 parser.add_argument('--failCount', type=str, default='r', metavar='fc',
                     help='determines how to reset early-stopping failed epoch counter. Options are \'r\' for reset and \'c\' for cumulative')
 parser.add_argument('--gamma', type = float, default=.05, metavar='g',
@@ -33,6 +44,8 @@ parser.add_argument('--input_height', type=int, default=128, metavar='ih',
                     help='height of each patch')
 parser.add_argument('--input_length', type=int, default=128, metavar='il',
                     help='length of each patch')
+parser.add_argument('--load', type=str, default='', metavar='l',
+                    help='loads the weights from a given filepath')
 parser.add_argument('--log', type=str, default='!', metavar='lg',
                     help='flag to determine whether to use tensorboard for logging. Default \'!\' is read to mean no logging')      
 parser.add_argument('--log_interval', type=int, default=10, metavar='N',
@@ -52,17 +65,21 @@ parser.add_argument('--patience', type = int, default = 10, metavar='pat',
                     help='patience value for early stopping')
 parser.add_argument('--plr', type = float, default=4e-6, metavar='plr',
                     help='pseudoinput learning rate')
+parser.add_argument('--print_pseudos', type = int, default=0, metavar='pp',
+                    help='Plot pseudos. Controls the number of pseudo inputs to be displayed')
 parser.add_argument('--pseudos', type=int, default=10, metavar='p',
                     help='Number of pseudo-inputs (default: 10)')
 parser.add_argument('--reg2', type = float, default=0, metavar='rg2',
                     help='coefficient for L2 weight decay')
+parser.add_argument('--repeat', action='store_true', default=False,
+                    help='determines whether to enact further training after loading weights')
 parser.add_argument('--save', type=str, default='', metavar='s',
                     help='saves the weights to a given filepath')
 parser.add_argument('--schedule', type = int, default=-1, metavar='sp',
                     help='use learning rate scheduler on loss stagnation with input patience')
 parser.add_argument('--seed', type=int, default=None, metavar='s',
                     help='manual random seed (default: None)')
-parser.add_argument('--source', type=str, default='..\..\zainmeekail\local_data\clipcropped', metavar='S',
+parser.add_argument('--source', type=str, default='data', metavar='S',
                     help='directory containing source files')
 parser.add_argument('--test_split', type=float, default=.2, metavar='ts',
                     help='portion of data reserved for testing')
@@ -88,10 +105,13 @@ else:
 if args.seed:
     torch.manual_seed(args.seed)
     
-'''switch(args.dataset) {
-    case 'ovd': data = nonOverlapWindowDataset(args.source, args.input_height, args.input_length, transforms.ToTensor())
-                break
-}'''
+writer=None
+if(args.log!='!'):
+    if(args.log=='$'):
+        writer = SummaryWriter()
+    else:
+        writer = SummaryWriter(log_dir=args.log)
+
 data = Datasets.nonOverlapWindowDataset(args.source, args.input_height, args.input_length, transforms.ToTensor())
 testSize = ceil(args.test_split * len(data))
 trainSize = len(data) - testSize
@@ -99,7 +119,7 @@ trainSet, testSet = random_split(data, [trainSize, testSize])
 train_loader = DataLoader(trainSet, batch_size=args.batch_size, shuffle=True, **kwargs)
 test_loader = DataLoader(testSet, batch_size=args.batch_size, shuffle=True, **kwargs)
 
-model = NVP(args.batch_size, args.input_length, args.lsdim, args.pseudos, args.beta, args.gamma, device, args.logvar_bound).to(device)
+model = NVP(args.input_length, args.batch_size, args.lsdim, args.pseudos, args.beta, args.gamma, device, args.logvar_bound).to(device)
 
 optimizer = torch.optim.Adam([{'params': model.vae.parameters()},
                         {'params': model.pseudoGen.parameters(), 'lr': args.plr}],
@@ -213,9 +233,30 @@ def test(epoch, max, startTime):
                 scatterPlot = plt.scatter(Z_embedded[:, 0], Z_embedded[:, 1], s = 4)
 
             plt.show()
-        if(args.pp>0):
-            t=min(args.pp,args.pseudos)
+        if(args.print_pseudos>0):
+            t=min(args.print_pseudos,args.pseudos)
             temp = model.means(model.idle_input).view(-1,args.input_length,args.input_length).detach().cpu()
             for x in range(t):
                 plt.matshow(temp[x].numpy())
                 plt.show()
+                
+summary(model,(1,args.input_length,args.input_length))
+if(args.load == ''):
+    for epoch in range(1, args.epochs + 1):
+        if(not stopEarly):
+            train(epoch)
+            test(epoch, args.epochs, startTime)
+else:
+    checkpoint=torch.load(args.load)
+    model.load_state_dict(checkpoint['model_state_dict'])
+    optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+    test(args.epochs, args.epochs, startTime)
+    if(args.repeat==True):
+        for epoch in range(1, args.epochs + 1):
+            train(epoch)
+            test(epoch, args.epochs, startTime)
+            
+if(args.log!='!'):
+    #res = torch.autograd.Variable(torch.Tensor(1,1,20,64,64), requires_grad=True).to(device)
+    #writer.add_graph(model,res,verbose=True)
+    writer.close()
