@@ -206,7 +206,7 @@ class NVP(nn.Module):
         logvars = z_p_logvar.unsqueeze(0)
         #logvars= means.repeat(z_expand.shape[0], 1, 1)
         
-        a = log_Normal_diag(z_expand, means, logvars, dim=2) - math.log(self.pseudos)  # MB x C
+        a = self.log_Normal_diag(z_expand, means, logvars, dim=2) - math.log(self.pseudos)  # MB x C
         
         #We will scale by the maximum posterior probabilities in order to ensure numerical stability in later stages
         a_max, _ = torch.max(a, 1)  # MB x 1
