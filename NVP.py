@@ -60,7 +60,7 @@ class VAE(nn.Module):
         x_mean, _, _, _ = self.forward(x)
         return x_mean
 
-    def encode(self, x):
+    def encoder(self, x):
         y1=x.clone()
 
         x=F.leaky_relu(self.conv1A(x))
@@ -121,7 +121,7 @@ class VAE(nn.Module):
         return torch.sigmoid(self.sbd(z))
 
     def forward(self, x):
-        mu, logvar = self.encode(x)
+        mu, logvar = self.encoder(x)
         z=self.reparameterize(mu,logvar)
         x_mean=self.decode(z)
         return x_mean, mu, logvar, z
