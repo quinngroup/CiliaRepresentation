@@ -178,7 +178,7 @@ class NVP(nn.Module):
         X = self.pseudoGen.forward(self.idle_input)
 
         # calculate params for given data
-        z_p_mean, z_p_logvar = self.vae.q_z(X.view(-1,1,self.input_length,self.input_length))  # C x M
+        z_p_mean, z_p_logvar = self.vae.encoder(X.view(-1,1,self.input_length,self.input_length))  # C x M
 
         #INCLUDE LATEX WRITEUP
         z_expand = z.unsqueeze(1)
