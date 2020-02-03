@@ -172,6 +172,22 @@ class NVP(nn.Module):
             gamma=self.gamma
         gamma=self.batch_size*gamma
         return (reconstructionLoss + self.beta*KL)+gamma*(pseudoReconstructionLoss + self.beta*pKL)
+        
+    def log_Normal_diag(x, mean, log_var, average=False, dim=None):
+        #print(log_var)
+        #T:(batch-size, num-pseudos, lsdim) 
+        #T[i,j,k]=element i, marginal probability along axis k for posterior j
+        log_normal = -0.5 * ( log_var + torch.pow( x - mean, 2 ) / torch.exp( log_var ) )
+
+        #T: (batch-size, num-pseudos)
+        #T[i,j]=log probability that element i originates from posterior j
+        if average:
+
+            return torch.mean( log_normal, dim )
+
+        else:
+
+            return torch.sum( log_normal, dim )
 
     def log_p_z(self,z):
         # calculate params
