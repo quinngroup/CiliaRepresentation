@@ -88,7 +88,7 @@ class VAE(nn.Module):
         y4=F.upsample(y4,scale_factor=8)
         x=F.upsample(x,scale_factor=16)
 
-        x=torch.cat((y1,y2,y3,y4,x),dim=4)
+        x=torch.cat((y1,y2,y3,y4,x),dim=1)
 
         x=F.leaky_relu(self.conv5(x))
         x=F.leaky_relu(self.conv6(x))      
@@ -147,7 +147,7 @@ class NVP(nn.Module):
         self.gamma = gamma
         
         self.vae = VAE(input_length, lsdim, device, logvar_bound)
-        self.pseudoGen = PseudoGen(pseudos,device)
+        self.pseudoGen = PseudoGen(input_length, pseudos,device)
         
         self.idle_input = torch.eye(pseudos, requires_grad=True).to(device)
 
