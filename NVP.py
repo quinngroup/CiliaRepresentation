@@ -159,13 +159,13 @@ class NVP(nn.Module):
         reconstructionLoss = F.mse_loss(recon_x.view(-1,self.input_length*self.input_length), x.view(-1, self.input_length*self.input_length), reduction = 'sum')
 
         log_p_z = self.log_p_z(z_q)
-        log_q_z = torch.sum(log_Normal_diag(z_q, mu, logvar, dim=1),0)
+        log_q_z = torch.sum(self.log_Normal_diag(z_q, mu, logvar, dim=1),0)
         KL = -(log_p_z - log_q_z)
 
         pseudoReconstructionLoss = F.mse_loss(recon_pseudo.view(-1,self.input_length*self.input_length), pseudo.view(-1, self.input_length*self.input_length), reduction = 'sum')
 
         plog_p_z = self.log_p_z(p_z)
-        plog_q_z = torch.sum(log_Normal_diag(p_z, p_mu, p_logvar, dim=1),0)
+        plog_q_z = torch.sum(self.log_Normal_diag(p_z, p_mu, p_logvar, dim=1),0)
         pKL= -(plog_p_z - plog_q_z)
 
         if gamma is None:
