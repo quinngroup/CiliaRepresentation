@@ -4,4 +4,5 @@ Date: 2/3/2020
 Model Architecture: NVP.py
 Non-default arguments: Tests learning rates in powers of 10 from 1e-3 to 1e-8.
 Weights saved as lr[learning_rate].h5
+Logs saved under lr[learning_rate]
 =======================================================================================
