@@ -13,7 +13,7 @@ Within a module directory, top-level files should include the main driver file. 
 
 - **results**: a directory containing all experiment related information for the given module. Experiment data *must* include a `log.txt` file which documents the purpose of the experiment, the naming conventions employed by the experiment, and the corresponding conditions of each trial (e.g. learning rate of \[X] corresponds to lr\[X].py). Experiment data *may include* stdout capture (either via bash redirection or through the tee command), recorded weights, tf-board event files or anything else deemed relevant.
 - **test_builds**: a directory containing all the various implementations and candidate models for the module. Each file in test_builds should be titled TB\[X] where \[X] is the next available index for test builds. See the test build section below for greater detail. 
-- **experiments**: a directory containing bash scripts to run experiments and trials, as well as a manifesto detailing each experiment. Experiment scripts should be of form exp\[X].py where \[X] is the corresponding experiment index. See experiment section for greater detail.
+- **experiments**: a directory containing bash scripts to run experiments and trials, as well as a manifest detailing each experiment. Experiment scripts should be of form exp\[X].py where \[X] is the corresponding experiment index. See experiment section for greater detail.
 - (optional) **scripts**: a directory containing any supplementary scripts. May be for testing, debugging or as a component of model operations.
 
 ## Branches
@@ -35,7 +35,7 @@ Experiments can be over basically anything, ranging from stability (not crashing
 
 2. Design stage experiments should be refined by either the originator of the issue or any other members of the project (e.g. grid-search different learning rate values over \[1e-5 through 9e-5]). After being refined, the tag should be changed to `script-ready`
 
-3. Then, a script must be made for the experiment. The script should be stored in the experiments directory following the conventions mentioned above. After a script is made, the manifesto file in the experiments directory must be updated to include the details of the newly added experiment. Finally the issue tag must be updated and set to `trial-ready`
+3. Then, a script must be made for the experiment. The script should be stored in the experiments directory following the conventions mentioned above. After a script is made, the manifest file in the experiments directory must be updated to include the details of the newly added experiment. Finally the issue tag must be updated and set to `trial-ready`
 
 4. Trial-ready scripts are to be executed on any suitable hardware choice. The primary choice is GCP cloud servers; however, alternative hardware choices are acceptable as well (e.g. a particularly well equipped desktop).
 
