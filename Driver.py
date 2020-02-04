@@ -10,6 +10,7 @@ import time
 import torch
 from torch.optim import lr_scheduler
 from torch.utils.data import DataLoader, random_split
+from torch.utils.tensorboard import SummaryWriter
 from torchsummary import summary
 from torchvision import transforms
 from utils import Datasets
