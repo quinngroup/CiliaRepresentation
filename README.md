@@ -37,7 +37,7 @@ Experiments can be over basically anything, ranging from stability (not crashing
 
 3. Then, a script must be made for the experiment. The script should be stored in the experiments directory following the conventions mentioned above. After a script is made, the manifest file in the experiments directory must be updated to include the details of the newly added experiment. Finally the issue tag must be updated and set to `trial-ready`
 
-4. Trial-ready scripts are to be executed on any suitable hardware choice. The primary choice is GCP cloud servers; however, alternative hardware choices are acceptable as well (e.g. a particularly well equipped desktop).
+4. Trial-ready scripts are to be executed on any suitable hardware choice. The primary choice is GCP cloud servers; however, alternative hardware choices are acceptable as well (e.g. a particularly well equipped desktop). When running a script, say `exp1.sh`, go to the experiments directory and type `nohup bash exp1.sh & > ../results/exp1/out.txt`
 
 5. Once the trial has been completed as specified by the experiment, the issue must be closed (unless further discussion is required).
 
