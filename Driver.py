@@ -93,7 +93,7 @@ args = parser.parse_args()
 #Runs model on GPU by default, but on CPU if GPU not available
 cuda = not args.no_cuda and torch.cuda.is_available()
 if cuda:
-    device = 'cuda:0'
+    device = 'cuda'
     kwargs = {'num_workers': 1, 'pin_memory': True}
     #Tests CUDA compatibility before instantiating dataset
     with torch.cuda.device(0):
