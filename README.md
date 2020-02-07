@@ -39,7 +39,9 @@ Experiments can be over basically anything, ranging from stability (not crashing
 
 4. Trial-ready scripts are to be executed on any suitable hardware choice. The primary choice is GCP cloud servers; however, alternative hardware choices are acceptable as well (e.g. a particularly well equipped desktop). When running a script, say `exp1.sh`, go to the experiments directory and type `nohup bash exp1.sh & > ../results/exp1/out.txt`
 
-5. Once the trial has been completed as specified by the experiment, the issue must be closed (unless further discussion is required).
+5. Once the trial has been completed as specified by the experiment, the issue is then set to the `analysis` tag. At this point, the results are observed and analyzed, with the discussion and/or conclusion being recorded on the ticket.
+
+6. Finally, the issue is closed.
 
 
 ## Test Builds 
