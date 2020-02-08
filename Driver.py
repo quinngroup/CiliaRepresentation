@@ -229,7 +229,7 @@ def train(epoch):
             per_item_loss=loss.item()/len(data)
             writer.add_scalar('item_loss',per_item_loss,global_step=step)
 
-    if and args.local_rank==0:
+    if args.local_rank==0:
         print('====> Epoch: {} Average loss: {:.4f}'.format(
               epoch, train_loss / len(train_loader.dataset)))
     if(args.schedule>0):
