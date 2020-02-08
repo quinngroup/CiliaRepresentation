@@ -122,17 +122,20 @@ train_loader = DataLoader(trainSet, batch_size=args.batch_size, shuffle=True, **
 test_loader = DataLoader(testSet, batch_size=args.batch_size, shuffle=True, **kwargs)
 
 model = NVP(args.input_length, args.batch_size, args.lsdim, args.pseudos, args.beta, args.gamma, device, args.logvar_bound)
+optimizer = torch.optim.Adam([{'params': model.vae.parameters()},
+                        {'params': model.pseudoGen.parameters(), 'lr': args.plr}],
+                        lr=args.lr, weight_decay=args.reg2)
+
+model, optimizer = amp.initialize(model, optimizer, opt_level="O0")
+
 if torch.cuda.device_count() > 1:
   print("Let's use", torch.cuda.device_count(), "GPUs!")
   # dim = 0 [30, xxx] -> [10, ...], [10, ...], [10, ...] on 3 GPUs
   model = apex.parallel.DistributedDataParallel(model)
 
-
 model=model.to(device)
 
-optimizer = torch.optim.Adam([{'params': model.vae.parameters()},
-                        {'params': model.pseudoGen.parameters(), 'lr': args.plr}],
-                        lr=args.lr, weight_decay=args.reg2)
+
 
 stopEarly = False
 failedEpochs=0
@@ -152,7 +155,8 @@ def train(epoch):
         pseudos=model.pseudoGen.forward(model.idle_input).view(-1,1,args.input_length,args.input_length).to(device)
         recon_pseudos, p_mu, p_logvar, p_z=model(pseudos)
         loss = model.loss_function(recon_batch, data, mu, logvar, z,pseudos,recon_pseudos, p_mu, p_logvar, p_z)
-        loss.backward()
+        with amp.scale_loss(loss, optimizer) as scaled_loss:
+            scaled_loss.backward()
         train_loss += loss.item()
         genLoss = model.loss_function(recon_batch, data, mu, logvar, z, pseudos, recon_pseudos, p_mu, p_logvar, p_z, gamma=0).item() / len(data)
         optimizer.step()
