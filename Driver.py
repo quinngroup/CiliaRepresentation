@@ -140,7 +140,7 @@ trainSet, testSet = random_split(data, [trainSize, testSize])
 train_loader = DataLoader(trainSet, batch_size=args.batch_size, shuffle=True, **kwargs)
 test_loader = DataLoader(testSet, batch_size=args.batch_size, shuffle=True, **kwargs)
 
-model = NVP(args.input_length, args.batch_size, args.lsdim, args.pseudos, args.beta, args.gamma, device, args.logvar_bound)
+model = NVP(args.input_length, args.batch_size, args.lsdim, args.pseudos, args.beta, args.gamma, device, args.logvar_bound).cuda()
 optimizer = torch.optim.Adam([{'params': model.vae.parameters()},
                         {'params': model.pseudoGen.parameters(), 'lr': args.plr}],
                         lr=args.lr, weight_decay=args.reg2)
@@ -155,7 +155,6 @@ if args.distributed:
     # model = torch.nn.parallel.DistributedDataParallel(model,
     #                                                   device_ids=[args.local_rank],
     #                                                   output_device=args.local_rank)
-    model=model.cuda()
 
 
 
