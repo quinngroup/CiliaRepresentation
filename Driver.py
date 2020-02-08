@@ -263,7 +263,7 @@ def test(epoch, max, startTime):
         labelTensor = db.labels_
     test_loss /= len(test_loader.dataset)
     gen_loss /= len(test_loader.dataset)
-    if and args.local_rank==0:
+    if args.local_rank==0:
         print('====> Test set loss: {:.4f}'.format(test_loss))
         print('====> Generation loss: {:.4f}'.format(gen_loss))
     if(epoch == 1):
