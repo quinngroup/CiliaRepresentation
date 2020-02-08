@@ -14,6 +14,7 @@ from torch.utils.tensorboard import SummaryWriter
 from torchsummary import summary
 from torchvision import transforms
 from utils import Datasets
+import apex
 
 '''
 Appearance Module Driver
