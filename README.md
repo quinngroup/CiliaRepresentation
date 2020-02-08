@@ -52,3 +52,7 @@ Although each module can potentially have test builds, the processing module wil
 2. Design progress should be recorded on the original issue and continued until a viable formulation has been reached. Then the issue tag should be set to `model-imp` for model implementation.
 
 3. Next, a python file should be created implementing the model. After this is done, the original issue should be closed. Any further work on the model will either be architectural changes which will be reflected in other test build issues, or as experiments as discussed above. The test build issue may be referenced in other issues, either test build or experiments, to provide a singular history for the model.
+
+## Distributed Mode
+
+Run using `python -m torch.distributed.launch --nproc_per_node=2 Driver.py [args]`
