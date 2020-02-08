@@ -150,7 +150,7 @@ model, optimizer = amp.initialize(model, optimizer, opt_level="O0")
 if args.distributed:
     # FOR DISTRIBUTED:  After amp.initialize, wrap the model with
     # apex.parallel.DistributedDataParallel.
-    model = DistributedDataParallel(model)
+    model = apex.parallel.DistributedDataParallel(model)
     # torch.nn.parallel.DistributedDataParallel is also fine, with some added args:
     # model = torch.nn.parallel.DistributedDataParallel(model,
     #                                                   device_ids=[args.local_rank],
