@@ -218,7 +218,7 @@ def train(epoch):
         train_loss += loss.item()
         genLoss = MODEL.loss_function(recon_batch, data, mu, logvar, z, pseudos, recon_pseudos, p_mu, p_logvar, p_z, gamma=0).item() / len(data)
         optimizer.step()
-        if batch_idx % args.log_interval == 0:
+        if batch_idx % args.log_interval == 0 and args.local_rank==0:
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}\tGenLoss: {:.6f}'.format(
                 epoch, batch_idx * len(data), len(train_loader.dataset),
                 100. * batch_idx / len(train_loader),
@@ -229,8 +229,9 @@ def train(epoch):
             per_item_loss=loss.item()/len(data)
             writer.add_scalar('item_loss',per_item_loss,global_step=step)
 
-    print('====> Epoch: {} Average loss: {:.4f}'.format(
-          epoch, train_loss / len(train_loader.dataset)))
+    if and args.local_rank==0:
+        print('====> Epoch: {} Average loss: {:.4f}'.format(
+              epoch, train_loss / len(train_loader.dataset)))
     if(args.schedule>0):
           scheduler.step(train_loss / len(train_loader.dataset))
 
@@ -262,8 +263,9 @@ def test(epoch, max, startTime):
         labelTensor = db.labels_
     test_loss /= len(test_loader.dataset)
     gen_loss /= len(test_loader.dataset)
-    print('====> Test set loss: {:.4f}'.format(test_loss))
-    print('====> Generation loss: {:.4f}'.format(gen_loss))
+    if and args.local_rank==0:
+        print('====> Test set loss: {:.4f}'.format(test_loss))
+        print('====> Generation loss: {:.4f}'.format(gen_loss))
     if(epoch == 1):
         lastLoss = test_loss
     elif not args.noEarlyStop:
@@ -275,7 +277,7 @@ def test(epoch, max, startTime):
                 epoch = max
         elif args.failCount == 'r':
             failedEpochs = 0
-    if(epoch == max):
+    if(epoch == max and args.local_rank==0):
         if(args.save != ''):
             torch.save({
                         'model_state_dict':model.state_dict(),
