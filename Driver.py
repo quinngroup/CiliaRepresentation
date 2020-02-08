@@ -155,8 +155,8 @@ if args.distributed:
     # model = torch.nn.parallel.DistributedDataParallel(model,
     #                                                   device_ids=[args.local_rank],
     #                                                   output_device=args.local_rank)
+    model=model.cuda()
 
-model=model.to(device)
 
 
 
