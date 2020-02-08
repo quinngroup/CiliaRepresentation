@@ -177,7 +177,7 @@ train_loader = DataLoader(
     sampler=train_sampler)
 
 test_loader = DataLoader(
-    val_dataset,
+    testSet,
     batch_size=args.batch_size, 
     shuffle=False,
     num_workers=args.workers, 
