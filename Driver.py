@@ -196,6 +196,8 @@ if(args.schedule>0):
     scheduler=lr_scheduler.ReduceLROnPlateau(optimizer,verbose=True,patience=args.schedule)
 
 def train(epoch):
+    if args.distributed:
+        train_sampler.set_epoch(epoch)
     model.train()
     train_loss = 0
     for batch_idx, data in enumerate(train_loader):
