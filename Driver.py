@@ -49,6 +49,8 @@ parser.add_argument('--input_length', type=int, default=128, metavar='il',
                     help='length of each patch')
 parser.add_argument('--load', type=str, default='', metavar='l',
                     help='loads the weights from a given filepath')
+parser.add_argument("--local_rank", type=int, default=0,
+                    help='parameter for distributed training provided by launch script')
 parser.add_argument('--log', type=str, default='!', metavar='lg',
                     help='flag to determine whether to use tensorboard for logging. Default \'!\' is read to mean no logging')      
 parser.add_argument('--log_interval', type=int, default=10, metavar='N',
@@ -90,6 +92,7 @@ parser.add_argument('--tolerance', type = float, default=.1, metavar='tol',
                     help='tolerance value for early stopping')
 parser.add_argument('--tsne', action='store_true', default=False,
                     help='Uses TSNE projection instead of UMAP.')
+                    
 args = parser.parse_args()
 
 #Runs model on GPU by default, but on CPU if GPU not available
@@ -104,6 +107,21 @@ else:
     device = 'cpu'
     kwargs = {}
     
+args.distributed = False
+if 'WORLD_SIZE' in os.environ:
+    args.distributed = int(os.environ['WORLD_SIZE']) > 1
+
+if args.distributed:
+    # FOR DISTRIBUTED:  Set the device according to local_rank.
+    torch.cuda.set_device(args.local_rank)
+
+    # FOR DISTRIBUTED:  Initialize the backend.  torch.distributed.launch will provide
+    # environment variables, and requires that you use init_method=`env://`.
+    torch.distributed.init_process_group(backend='nccl',
+                                         init_method='env://')
+
+torch.backends.cudnn.benchmark = True
+
 #Manually sets random seed if requested
 if args.seed:
     torch.manual_seed(args.seed)
@@ -129,10 +147,14 @@ optimizer = torch.optim.Adam([{'params': model.vae.parameters()},
 
 model, optimizer = amp.initialize(model, optimizer, opt_level="O0")
 
-if torch.cuda.device_count() > 1:
-  print("Let's use", torch.cuda.device_count(), "GPUs!")
-  # dim = 0 [30, xxx] -> [10, ...], [10, ...], [10, ...] on 3 GPUs
-  model = apex.parallel.DistributedDataParallel(model)
+if args.distributed:
+    # FOR DISTRIBUTED:  After amp.initialize, wrap the model with
+    # apex.parallel.DistributedDataParallel.
+    model = DistributedDataParallel(model)
+    # torch.nn.parallel.DistributedDataParallel is also fine, with some added args:
+    # model = torch.nn.parallel.DistributedDataParallel(model,
+    #                                                   device_ids=[args.local_rank],
+    #                                                   output_device=args.local_rank)
 
 model=model.to(device)
 
