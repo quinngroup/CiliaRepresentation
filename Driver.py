@@ -162,6 +162,8 @@ data = Datasets.nonOverlapWindowDataset(args.source, args.input_height, args.inp
 testSize = ceil(args.test_split * len(data))
 trainSize = len(data) - testSize
 trainSet, testSet = random_split(data, [trainSize, testSize])
+train_sampler=None
+test_sampler=None
 if args.distributed:
     train_sampler = torch.utils.data.distributed.DistributedSampler(trainSet)
     test_sampler = torch.utils.data.distributed.DistributedSampler(testSet)
