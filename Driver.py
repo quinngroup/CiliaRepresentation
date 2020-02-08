@@ -176,13 +176,15 @@ def train(epoch):
         recon_batch, mu, logvar, z = model(data)
         if args.distributed:
             MODEL=model.module
-        pseudos=model.pseudoGen.forward(model.idle_input).view(-1,1,args.input_length,args.input_length).to(device)
+        else:
+            MODEL=model
+        pseudos=MODEL.pseudoGen.forward(MODEL.idle_input).view(-1,1,args.input_length,args.input_length).to(device)
         recon_pseudos, p_mu, p_logvar, p_z=model(pseudos)
-        loss = model.loss_function(recon_batch, data, mu, logvar, z,pseudos,recon_pseudos, p_mu, p_logvar, p_z)
+        loss = MODEL.loss_function(recon_batch, data, mu, logvar, z,pseudos,recon_pseudos, p_mu, p_logvar, p_z)
         with amp.scale_loss(loss, optimizer) as scaled_loss:
             scaled_loss.backward()
         train_loss += loss.item()
-        genLoss = model.loss_function(recon_batch, data, mu, logvar, z, pseudos, recon_pseudos, p_mu, p_logvar, p_z, gamma=0).item() / len(data)
+        genLoss = MODEL.loss_function(recon_batch, data, mu, logvar, z, pseudos, recon_pseudos, p_mu, p_logvar, p_z, gamma=0).item() / len(data)
         optimizer.step()
         if batch_idx % args.log_interval == 0:
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}\tGenLoss: {:.6f}'.format(
@@ -209,15 +211,17 @@ def test(epoch, max, startTime):
     global stopEarly
     zTensor = torch.empty(0,args.lsdim).to(device)
     if args.distributed:
-            MODEL=model.module
-    pseudos=model.pseudoGen.forward(model.idle_input).view(-1,1,args.input_length,args.input_length).to(device)             
+        MODEL=model.module
+    else:
+        MODEL=model
+    pseudos=MODEL.pseudoGen.forward(MODEL.idle_input).view(-1,1,args.input_length,args.input_length).to(device)             
     recon_pseudos, p_mu, p_logvar, p_z=model(pseudos)
     with torch.no_grad():
         for i, data in enumerate(test_loader):
             data = data.to(device)
             recon_batch, mu, logvar, z = model(data)
-            test_loss += model.loss_function(recon_batch, data, mu, logvar,z,pseudos,recon_pseudos, p_mu, p_logvar, p_z).item()
-            gen_loss += model.loss_function(recon_batch, data, mu, logvar, z, pseudos, recon_pseudos, p_mu, p_logvar, p_z, gamma=0).item()
+            test_loss += MODEL.loss_function(recon_batch, data, mu, logvar,z,pseudos,recon_pseudos, p_mu, p_logvar, p_z).item()
+            gen_loss += MODEL.loss_function(recon_batch, data, mu, logvar, z, pseudos, recon_pseudos, p_mu, p_logvar, p_z, gamma=0).item()
             zTensor = torch.cat((zTensor, z), 0)
     if (args.dbscan == True) :
         zScaled = StandardScaler().fit_transform((torch.Tensor.cpu(zTensor).numpy())) #re-add StandardScaler().fit_transform
