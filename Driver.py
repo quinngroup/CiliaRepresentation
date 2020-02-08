@@ -182,7 +182,7 @@ test_loader = DataLoader(
     shuffle=False,
     num_workers=args.workers, 
     pin_memory=True,
-    sampler=val_sampler)
+    sampler=test_sampler)
 
 
 
