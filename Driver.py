@@ -92,8 +92,15 @@ parser.add_argument('--tolerance', type = float, default=.1, metavar='tol',
                     help='tolerance value for early stopping')
 parser.add_argument('--tsne', action='store_true', default=False,
                     help='Uses TSNE projection instead of UMAP.')
+parser.add_argument('--workers', default=4, type=int, metavar='N',
+                    help='number of data loading workers (default: 4)')
                     
 args = parser.parse_args()
+
+
+
+
+
 
 #Runs model on GPU by default, but on CPU if GPU not available
 cuda = not args.no_cuda and torch.cuda.is_available()
@@ -133,12 +140,6 @@ if(args.log!='!'):
     else:
         writer = SummaryWriter(log_dir=args.log)
 
-data = Datasets.nonOverlapWindowDataset(args.source, args.input_height, args.input_length, transforms.ToTensor())
-testSize = ceil(args.test_split * len(data))
-trainSize = len(data) - testSize
-trainSet, testSet = random_split(data, [trainSize, testSize])
-train_loader = DataLoader(trainSet, batch_size=args.batch_size, shuffle=True, **kwargs)
-test_loader = DataLoader(testSet, batch_size=args.batch_size, shuffle=True, **kwargs)
 
 model = NVP(args.input_length, args.batch_size, args.lsdim, args.pseudos, args.beta, args.gamma, device, args.logvar_bound).cuda()
 optimizer = torch.optim.Adam([{'params': model.vae.parameters()},
@@ -155,6 +156,33 @@ if args.distributed:
     # model = torch.nn.parallel.DistributedDataParallel(model,
     #                                                   device_ids=[args.local_rank],
     #                                                   output_device=args.local_rank)
+
+#Construct datasets
+data = Datasets.nonOverlapWindowDataset(args.source, args.input_height, args.input_length, transforms.ToTensor())
+testSize = ceil(args.test_split * len(data))
+trainSize = len(data) - testSize
+trainSet, testSet = random_split(data, [trainSize, testSize])
+if args.distributed:
+    train_sampler = torch.utils.data.distributed.DistributedSampler(trainSet)
+    test_sampler = torch.utils.data.distributed.DistributedSampler(testSet)
+#train_loader = DataLoader(trainSet, batch_size=args.batch_size, shuffle=True, **kwargs)
+#test_loader = DataLoader(testSet, batch_size=args.batch_size, shuffle=True, **kwargs)
+
+train_loader = DataLoader(
+    trainSet, 
+    batch_size=args.batch_size, 
+    shuffle=(train_sampler is None),
+    num_workers=args.workers, 
+    pin_memory=True, 
+    sampler=train_sampler)
+
+test_loader = DataLoader(
+    val_dataset,
+    batch_size=args.batch_size, 
+    shuffle=False,
+    num_workers=args.workers, 
+    pin_memory=True,
+    sampler=val_sampler)
 
 
 
