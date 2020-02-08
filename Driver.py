@@ -15,6 +15,7 @@ from torchsummary import summary
 from torchvision import transforms
 from utils import Datasets
 import apex
+from apex import amp
 
 '''
 Appearance Module Driver
