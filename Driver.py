@@ -175,7 +175,7 @@ def train(epoch):
         optimizer.zero_grad()
         recon_batch, mu, logvar, z = model(data)
         if args.distributed:
-            pseudos=model.module.pseudoGen.forward(model.idle_input).view(-1,1,args.input_length,args.input_length).to(device)
+            pseudos=model.module.pseudoGen.forward(model.module.idle_input).view(-1,1,args.input_length,args.input_length).to(device)
         else:
             pseudos=model.pseudoGen.forward(model.idle_input).view(-1,1,args.input_length,args.input_length).to(device)
         recon_pseudos, p_mu, p_logvar, p_z=model(pseudos)
@@ -210,7 +210,7 @@ def test(epoch, max, startTime):
     global stopEarly
     zTensor = torch.empty(0,args.lsdim).to(device)
     if args.distributed:
-            pseudos=model.module.pseudoGen.forward(model.idle_input).view(-1,1,args.input_length,args.input_length).to(device)
+            pseudos=model.module.pseudoGen.forward(model.module.idle_input).view(-1,1,args.input_length,args.input_length).to(device)
     else:
         pseudos=model.pseudoGen.forward(model.idle_input).view(-1,1,args.input_length,args.input_length).to(device)             
     recon_pseudos, p_mu, p_logvar, p_z=model(pseudos)
