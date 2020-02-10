@@ -1,4 +1,4 @@
-Exp19 Experiment Log:
+Exp1 Experiment Log:
 =======================================================================================
 Date: 2/3/2020
 Model Architecture: NVP.py
