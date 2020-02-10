@@ -31,7 +31,7 @@ parser.add_argument('--batch_size', type=int, default=128, metavar='b',
                     help='number of elements per minibatch')
 parser.add_argument('--beta', type=float, default=1.0, metavar='b',
                     help='sets the value of beta for a beta-vae implementation')
-parser.add_argument('--dataset', type=str, default=None, metavar='D',
+parser.add_argument('--dataset', type=str, default='nwd', metavar='D',
                     help='dataset selection for training and testing')
 parser.add_argument('--dbscan', action='store_true', default= False,
                     help='to run dbscan clustering')      
@@ -157,7 +157,23 @@ if args.distributed:
                                                     output_device=args.local_rank)
 
 #Construct datasets
-data = Datasets.nonOverlapWindowDataset(args.source, args.input_height, args.input_length, transforms.ToTensor())
+if args.dataset == 'od':
+    data = Datasets.overlapDataset(args.source, args.clip_length)
+elif args.dataset == 'nd':
+    data = Datasets.nonOverlapDataset(args.source, args.clip_length)
+elif args.dataset == 'frd':
+    data = Datasets.frameDataset(args.source, transforms.ToTensor())
+elif args.dataset == 'nwd':
+    data = Datasets.nonOverlapWindowDataset(args.source, args.input_height, args.input_length, transforms.ToTensor())
+elif args.dataset == 'owd':
+    data = Datasets.overlapWindowDataset(args.source, args.input_height, args.input_length, transforms.ToTensor())
+elif args.dataset == 'ncd':
+    data = Datasets.nonOverlapClipDataset(args.source, args.clip_length, args.input_height, args.input_length)
+elif args.dataset == 'ocd':
+    data = Datasets.overlapClipDataset(args.source, args.clip_length, args.input_height, args.input_length)
+else:
+    data = None
+
 testSize = ceil(args.test_split * len(data))
 trainSize = len(data) - testSize
 trainSet, testSet = random_split(data, [trainSize, testSize])
