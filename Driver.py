@@ -237,8 +237,9 @@ def train(epoch):
     since if the model is run in distributed mode, each singular gpu will only 
     process *half* the data but would otherwise normalize by the length of the entire dataset    
     '''
-    print('====> Epoch: {} Average loss (main gpu): {:.4f}'.format(
-          epoch, scale*train_loss / len(train_loader.dataset)))
+    if args.local_rank==0:
+        print('====> Epoch: {} Average loss (main gpu): {:.4f}'.format(
+              epoch, scale*train_loss / len(train_loader.dataset)))
     if(args.schedule>0):
           scheduler.step(scale*train_loss / len(train_loader.dataset))
 
