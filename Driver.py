@@ -114,6 +114,7 @@ else:
     device = 'cpu'
     kwargs = {}
     
+#Determine whether the process is being run as distributed
 args.distributed = False
 if 'WORLD_SIZE' in os.environ:
     args.distributed = int(os.environ['WORLD_SIZE']) > 1
@@ -146,16 +147,14 @@ optimizer = torch.optim.Adam([{'params': model.vae.parameters()},
                         {'params': model.pseudoGen.parameters(), 'lr': args.plr}],
                         lr=args.lr, weight_decay=args.reg2)
 
+#Amp optional fp optimization
 model, optimizer = amp.initialize(model, optimizer, opt_level="O0")
 
 if args.distributed:
     # FOR DISTRIBUTED:  After amp.initialize, wrap the model with
-    # apex.parallel.DistributedDataParallel.
-    model = apex.parallel.DistributedDataParallel(model)
-    # torch.nn.parallel.DistributedDataParallel is also fine, with some added args:
-    # model = torch.nn.parallel.DistributedDataParallel(model,
-    #                                                   device_ids=[args.local_rank],
-    #                                                   output_device=args.local_rank)
+    model = torch.nn.parallel.DistributedDataParallel(model,
+                                                    device_ids=[args.local_rank],
+                                                    output_device=args.local_rank)
 
 #Construct datasets
 data = Datasets.nonOverlapWindowDataset(args.source, args.input_height, args.input_length, transforms.ToTensor())
@@ -164,11 +163,10 @@ trainSize = len(data) - testSize
 trainSet, testSet = random_split(data, [trainSize, testSize])
 train_sampler=None
 test_sampler=None
+
 if args.distributed:
     train_sampler = torch.utils.data.distributed.DistributedSampler(trainSet)
     test_sampler = torch.utils.data.distributed.DistributedSampler(testSet)
-#train_loader = DataLoader(trainSet, batch_size=args.batch_size, shuffle=True, **kwargs)
-#test_loader = DataLoader(testSet, batch_size=args.batch_size, shuffle=True, **kwargs)
 
 train_loader = DataLoader(
     trainSet, 
@@ -206,10 +204,14 @@ def train(epoch):
         data = data.to(device)
         optimizer.zero_grad()
         recon_batch, mu, logvar, z = model(data)
+        
+        #For model module access, must reference model.module 
+        #if distributed to get through the distributed wrapper class
         if args.distributed:
             MODEL=model.module
         else:
             MODEL=model
+
         pseudos=MODEL.pseudoGen.forward(MODEL.idle_input).view(-1,1,args.input_length,args.input_length).to(device)
         recon_pseudos, p_mu, p_logvar, p_z=model(pseudos)
         loss = MODEL.loss_function(recon_batch, data, mu, logvar, z,pseudos,recon_pseudos, p_mu, p_logvar, p_z)
@@ -335,6 +337,6 @@ else:
             test(epoch, args.epochs, startTime)
             
 if(args.log!='!'):
-    #res = torch.autograd.Variable(torch.Tensor(1,1,20,64,64), requires_grad=True).to(device)
+    #res = torch.autograd.Variable(torch.Tensor(1,1,128,128), requires_grad=True).to(device)
     #writer.add_graph(model,res,verbose=True)
     writer.close()
