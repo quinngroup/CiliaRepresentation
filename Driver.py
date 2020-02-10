@@ -195,6 +195,12 @@ scheduler=None
 if(args.schedule>0):
     scheduler=lr_scheduler.ReduceLROnPlateau(optimizer,verbose=True,patience=args.schedule)
 
+
+scale=1
+if args.distributed:
+    scale=2
+
+
 def train(epoch):
     if args.distributed:
         train_sampler.set_epoch(epoch)
@@ -207,10 +213,8 @@ def train(epoch):
 
         #For model module access, must reference model.module 
         #if distributed to get through the distributed wrapper class
-        scale=1
         if args.distributed:
             MODEL=model.module
-            scale=2
         else:
             MODEL=model
             
@@ -269,8 +273,8 @@ def test(epoch, max, startTime):
         db = DBSCAN(eps= 0.7, min_samples= 3).fit(zScaled)
         print(db.labels_)
         labelTensor = db.labels_
-    test_loss /= len(test_loader.dataset)
-    gen_loss /= len(test_loader.dataset)
+    test_loss /= len(test_loader.dataset)/scale
+    gen_loss /= len(test_loader.dataset)/scale
     if args.local_rank==0:
         print('====> Test set loss: {:.4f}'.format(test_loss))
         print('====> Generation loss: {:.4f}'.format(gen_loss))
