@@ -225,7 +225,7 @@ def train(epoch):
         if batch_idx % args.log_interval == 0 and args.local_rank==0:
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}\tGenLoss: {:.6f}'.format(
                 epoch, scale*batch_idx * len(data), len(train_loader.dataset),
-                100. * scale*batch_idx / len(train_loader),
+                100. * batch_idx / len(train_loader),
                 loss.item() / len(data),
                 genLoss))
         step=epoch*len(train_loader)+batch_idx
