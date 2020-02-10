@@ -204,14 +204,16 @@ def train(epoch):
         data = data.to(device)
         optimizer.zero_grad()
         recon_batch, mu, logvar, z = model(data)
-        
+
         #For model module access, must reference model.module 
         #if distributed to get through the distributed wrapper class
+        scale=1
         if args.distributed:
             MODEL=model.module
+            scale=2
         else:
             MODEL=model
-
+            
         pseudos=MODEL.pseudoGen.forward(MODEL.idle_input).view(-1,1,args.input_length,args.input_length).to(device)
         recon_pseudos, p_mu, p_logvar, p_z=model(pseudos)
         loss = MODEL.loss_function(recon_batch, data, mu, logvar, z,pseudos,recon_pseudos, p_mu, p_logvar, p_z)
@@ -222,8 +224,8 @@ def train(epoch):
         optimizer.step()
         if batch_idx % args.log_interval == 0 and args.local_rank==0:
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}\tGenLoss: {:.6f}'.format(
-                epoch, batch_idx * len(data), len(train_loader.dataset),
-                100. * batch_idx / len(train_loader),
+                epoch, scale*batch_idx * len(data), len(train_loader.dataset),
+                100. * scale*batch_idx / len(train_loader),
                 loss.item() / len(data),
                 genLoss))
         step=epoch*len(train_loader)+batch_idx
@@ -231,12 +233,10 @@ def train(epoch):
             per_item_loss=loss.item()/len(data)
             writer.add_scalar('item_loss',per_item_loss,global_step=step)
 
-    '''Note in the "average loss" section we multiply by 2 
-    since each singular gpu will only process *half* the data
-    but would otherwise normalize by the length of the entire dataset    
+    '''Note in the "average loss" section we multiply by the constant scale 
+    since if the model is run in distributed mode, each singular gpu will only 
+    process *half* the data but would otherwise normalize by the length of the entire dataset    
     '''
-    if args.local_rank==0:
-        scale = 2 if args.distributed else 1
         print('====> Epoch: {} Average loss (main gpu): {:.4f}'.format(
               epoch, scale*train_loss / len(train_loader.dataset)))
     if(args.schedule>0):
