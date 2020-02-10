@@ -231,11 +231,16 @@ def train(epoch):
             per_item_loss=loss.item()/len(data)
             writer.add_scalar('item_loss',per_item_loss,global_step=step)
 
+    '''Note in the "average loss" section we multiply by 2 
+    since each singular gpu will only process *half* the data
+    but would otherwise normalize by the length of the entire dataset    
+    '''
     if args.local_rank==0:
-        print('====> Epoch: {} Average loss: {:.4f}'.format(
-              epoch, train_loss / len(train_loader.dataset)))
+        scale = 2 if args.distributed else 1
+        print('====> Epoch: {} Average loss (main gpu): {:.4f}'.format(
+              epoch, scale*train_loss / len(train_loader.dataset)))
     if(args.schedule>0):
-          scheduler.step(train_loss / len(train_loader.dataset))
+          scheduler.step(scale*train_loss / len(train_loader.dataset))
 
 def test(epoch, max, startTime):
     model.eval()
