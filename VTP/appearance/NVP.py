@@ -7,7 +7,7 @@ from torch.nn import functional as F
 from torchvision import datasets, transforms
 from torchsummary import summary
 import sys,os
-from ..utils.nn import spatial_broadcast_decoder
+from VTP.utils.nn import spatial_broadcast_decoder
 
 
 class VAE(nn.Module):
