@@ -7,10 +7,7 @@ from torch.nn import functional as F
 from torchvision import datasets, transforms
 from torchsummary import summary
 import sys,os
-from utils.nn import spatial_broadcast_decoder
-
-if(__name__=="__main__"):
-    sys.path.insert(0,'../')
+from ..utils.nn import spatial_broadcast_decoder
 
 
 class VAE(nn.Module):
