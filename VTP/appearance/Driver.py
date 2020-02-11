@@ -13,7 +13,7 @@ from torch.utils.data import DataLoader, random_split
 from torch.utils.tensorboard import SummaryWriter
 from torchsummary import summary
 from torchvision import transforms
-from utils import Datasets
+from VTP.utils import Datasets
 import apex
 from apex import amp
 import os
