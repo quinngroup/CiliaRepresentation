@@ -6,3 +6,6 @@ Non-default arguments: Tests learning rates in powers of 10 from 1e-3 to 1e-8.
 Weights saved as lr[learning_rate].h5
 Logs saved under lr[learning_rate]
 =======================================================================================
+Results: Safe learning rates range from 1e-4 to 1e-6.
+Conclusion: default 1e-4 if using learning rate scheduling, else default to 1e-5
+=======================================================================================
