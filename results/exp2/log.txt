@@ -1,0 +1,8 @@
+Exp2 Experiment Log:
+=======================================================================================
+Date: 2/11/2020
+Model Architecture: NVP.py
+Non-default arguments: Tests batch sizes of 10, 20, 40, and 80 with learning rate 1e-5.
+Weights saved as bs[batch_size].h5
+Logs saved under bs[batch_size]
+=======================================================================================
