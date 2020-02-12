@@ -57,7 +57,7 @@ parser.add_argument('--log_interval', type=int, default=10, metavar='N',
                     help='how many batches to wait before logging training status')
 parser.add_argument('--logvar_bound', type=float, default=-1.0, metavar='lb',
                     help='Lower bound on logvar (default: -1.0)')
-parser.add_argument('--lr', type = float, default=1e-4, metavar='lr',
+parser.add_argument('--lr', type = float, default=1e-5, metavar='lr',
                     help='learning rate')
 parser.add_argument('--lsdim', type = int, default=10, metavar='ld',
                     help='sets the number of dimensions in the latent space. should be >1. If  <3, will generate graphical representation of latent without TSNE projection')
