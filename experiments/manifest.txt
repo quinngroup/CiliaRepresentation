@@ -6,3 +6,17 @@ Non-default arguments: Tests learning rates in powers of 10 from 1e-3 to 1e-8.
 Weights saved as lr[learning_rate].h5
 Logs saved under lr[learning_rate]
 =======================================================================================
+Results: Safe learning rates range from 1e-4 to 1e-6.
+Conclusion: default 1e-4 if using learning rate scheduling, else default to 1e-5
+=======================================================================================
+
+
+
+Exp2 Experiment Log:
+=======================================================================================
+Date: 2/11/2020
+Model Architecture: NVP.py
+Non-default arguments: Tests batch sizes of 10, 20, 40, and 80 with learnging rate 1e-5.
+Weights saved as bs[batch_size].h5
+Logs saved under bs[batch_size]
+=======================================================================================
