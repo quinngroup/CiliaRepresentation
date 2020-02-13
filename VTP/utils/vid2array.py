@@ -21,12 +21,12 @@ for subdir, dirs, files in os.walk(args.source):
             location=os.path.join(subdir, file)
             print(location)
             videodata = skvideo.io.vread(location)
-            print(videodata.shape)
             destName=args.dest+file[:-4]
             if os.path.exists(destName):
                 destName+="_"+subdir
             destName.replace(" ", "_")
             print(destName)
+            print(videodata.shape)
             if videodata.dtype!=np.uint8:
                 np.save(destName,videodata.astype(np.uint8))
             else:
