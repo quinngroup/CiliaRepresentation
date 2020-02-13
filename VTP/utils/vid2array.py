@@ -25,6 +25,7 @@ for subdir, dirs, files in os.walk(args.source):
             if os.path.exists(destName):
                 destName+="_"+subdir
             destName.replace(" ", "_")
+            destName.replace("\t", "_")
             print(destName)
             print(videodata.shape)
             if videodata.dtype!=np.uint8:
