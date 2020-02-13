@@ -21,4 +21,8 @@ for subdir, dirs, files in os.walk(args.source):
         print(location)
         videodata = skvideo.io.vread(location)
         print(videodata.shape)
-        np.save(args.dest,videodata.astype(np.uint8))
+        destName=args.dest+file[:-4]
+        while os.path.exists(destName):
+            destName+="_"+subdir
+        np.save(destName,videodata.astype(np.uint8))
+        
