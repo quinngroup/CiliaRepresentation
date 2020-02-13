@@ -2,6 +2,7 @@ import skvideo.io
 import numpy as np
 import argparse
 import os
+import re
 
 '''
 Converts numpy arrays to videos
@@ -24,8 +25,7 @@ for subdir, dirs, files in os.walk(args.source):
             destName=args.dest+file[:-4]
             if os.path.exists(destName):
                 destName+="_"+subdir
-            destName.replace(" ", "_")
-            destName.replace("\t", "_")
+            destName = re.sub('[^0-9a-zA-Z]+', '*', destName)
             print(destName)
             print(videodata.shape)
             if videodata.dtype!=np.uint8:
