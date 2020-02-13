@@ -17,13 +17,12 @@ assert args.source != '','Please specify video directory'
 
 for subdir, dirs, files in os.walk(args.source):
     for file in files:
-        if not file[-4:]=='.avi'
-        location=os.path.join(subdir, file)
-        print(location)
-        videodata = skvideo.io.vread(location)
-        print(videodata.shape)
-        destName=args.dest+file[:-4]
-        while os.path.exists(destName):
-            destName+="_"+subdir
-        np.save(destName,videodata.astype(np.uint8))
-        
+        if file[-4:]=='.avi':
+            location=os.path.join(subdir, file)
+            print(location)
+            videodata = skvideo.io.vread(location)
+            print(videodata.shape)
+            destName=args.dest+file[:-4]
+            if os.path.exists(destName):
+                destName+="_"+subdir
+            np.save(destName,videodata.astype(np.uint8))
