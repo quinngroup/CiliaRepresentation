@@ -21,7 +21,7 @@ for subdir, dirs, files in os.walk(args.source):
         if file[-4:]=='.avi':
             location=os.path.join(subdir, file)
             print(location)
-            videodata = skvideo.io.vread(location)
+            videodata = skvideo.io.vread(location)[:,:,:,0]
             destName=args.dest+file[:-4]
             if os.path.exists(destName):
                 destName+="_"+subdir
@@ -29,6 +29,6 @@ for subdir, dirs, files in os.walk(args.source):
             print(destName)
             print(videodata.shape)
             if videodata.dtype!=np.uint8:
-                np.save(destName,videodata.astype(np.uint8)[:,:,:,0])
+                np.save(destName,videodata.astype(np.uint8))
             else:
-                np.save(destName,videodata[:,:,:,0])
+                np.save(destName,videodata)
