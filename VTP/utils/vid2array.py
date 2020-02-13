@@ -25,6 +25,7 @@ for subdir, dirs, files in os.walk(args.source):
             destName=args.dest+file[:-4]
             if os.path.exists(destName):
                 destName+="_"+subdir
+            destName.replace(" ", "_")
             print(destName)
             if videodata.dtype!=np.uint8:
                 np.save(destName,videodata.astype(np.uint8))
