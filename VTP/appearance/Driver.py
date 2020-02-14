@@ -137,7 +137,7 @@ if args.seed:
     torch.manual_seed(args.seed)
     
 writer=None
-if(args.log!='!'):
+if(args.log!='!' and args.local_rank==0):
     if(args.log=='$'):
         writer = SummaryWriter()
     else:
@@ -251,7 +251,7 @@ def train(epoch):
                 loss.item() / len(data),
                 genLoss))
         step=epoch*len(train_loader)+batch_idx
-        if(args.log!='!'):
+        if(args.log!='!' and args.local_rank==0):
             per_item_loss=loss.item()/len(data)
             writer.add_scalar('item_loss',per_item_loss,global_step=step)
 
@@ -364,7 +364,7 @@ else:
             train(epoch)
             test(epoch, args.epochs, startTime)
             
-if(args.log!='!'):
+if(args.log!='!' and args.local_rank==0):
     #res = torch.autograd.Variable(torch.Tensor(1,1,128,128), requires_grad=True).to(device)
     #writer.add_graph(model,res,verbose=True)
     writer.close()
