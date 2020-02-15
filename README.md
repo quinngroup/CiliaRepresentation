@@ -18,7 +18,7 @@ VTP subdirectories correspond to **modules** in the project. Specifically:
 
 Within a module directory, top-level files should include the main driver file. Subdirectories should include:
 
-- **test_builds**: a directory containing all the various implementations and candidate models for the module. Each file in test_builds should be titled TB\[X] where \[X] is the next available index for test builds. See the test build section below for greater detail. 
+- **test_builds**: a directory containing all the various implementations and candidate models for the module. Each file in test_builds should be titled [3 letter initialism]\[X] where \[X] is the next available index for test builds. See the test build section below for greater detail. 
 
 ## Branches
 Certain dependencies exist between modules which can make parallel development challenging, such as the fact that the Appearance module may depend on results from the Processing module; however, these do not completely restrict the development of modules in parallel. Parallel development is facilitated through branching.
