@@ -25,6 +25,8 @@ if __name__ == '__main__':
     parser.add_argument('--dest', type=str, default='clipped/', metavar='d',
                         help = 'Directory in which to save files (default=\'clipped/\')')
     args = parser.parse_args()
+
+    assert args.source != '','Please specify video directory'
     
     for file in os.listdir(args.source):
         if file.endswith('.npy'):

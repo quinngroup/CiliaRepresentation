@@ -30,6 +30,8 @@ if __name__ == '__main__':
                         help = 'Directory in which to save files (default=\'cropped/\')')
     args = parser.parse_args()
     
+    assert args.source != '','Please specify video directory'
+
     for file in os.listdir(args.source):
         if file.endswith('.npy'):
             np.save(args.dest + file, cropper(file, args.patchHeight, args.patchWidth))

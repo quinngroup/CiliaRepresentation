@@ -20,6 +20,8 @@ parser.add_argument('--dest', type=str, default='patched/', metavar='d',
                     help = 'Directory in which to save files (default=\'patched/\')')
 args = parser.parse_args()
 
+assert args.source != '','Please specify video directory'
+
 for file in os.listdir(args.source):
     if file.endswith('.npy'):
         data = np.load(args.source+file, mmap_mode='r')

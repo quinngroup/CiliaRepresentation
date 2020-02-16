@@ -5,7 +5,8 @@ import os
 import re
 
 '''
-Converts numpy arrays to videos
+Converts avi files to uint8 grayscale numpy arrays
+of shape (#Frames, Height, Width)
 
 @author Meekail Zain
 '''
