@@ -27,7 +27,7 @@ startTime = time.time()
 
 #Parses arguments passed from command line
 parser = ArgumentParser(description='AppearanceDriver')
-parser.add_argument('--batch_size', type=int, default=160, metavar='b',
+parser.add_argument('--batch_size', type=int, default=80, metavar='b',
                     help='number of elements per minibatch')
 parser.add_argument('--beta', type=float, default=1.0, metavar='b',
                     help='sets the value of beta for a beta-vae implementation')
