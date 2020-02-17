@@ -136,11 +136,10 @@ class PseudoGen(nn.Module):
         return torch.sigmoid(self.means(x))
 
 class NVP(nn.Module):
-    def __init__(self, input_length, batch_size, lsdim, pseudos, beta, gamma, device, logvar_bound):
+    def __init__(self, input_length, lsdim, pseudos, beta, gamma, device, logvar_bound):
         super(NVP, self).__init__()
         
         self.input_length = input_length
-        self.batch_size = batch_size
         self.pseudos = pseudos
         self.beta = beta
         self.gamma = gamma
@@ -168,7 +167,26 @@ class NVP(nn.Module):
 
         if gamma is None:
             gamma=self.gamma
-        return ((reconstructionLoss + self.beta*KL)+(self.batch_size * gamma / self.pseudos)*(pseudoReconstructionLoss + self.beta*pKL))/(1 + gamma)
+        return (reconstructionLoss + self.beta*KL)+(x.shape[0] * gamma / self.pseudos)*(pseudoReconstructionLoss + self.beta*pKL)
+        
+    def bayesian_loss(self, recon_x, x, mu, logvar, z_q, pseudo,recon_pseudo, p_mu, p_logvar, p_z, gamma=None):
+        reconstructionLoss = F.mse_loss(recon_x.view(-1,self.input_length*self.input_length), x.view(-1, self.input_length*self.input_length), reduction = 'sum')
+
+        log_p_z = self.log_p_z(z_q)
+        log_q_z = torch.sum(self.log_Normal_diag(z_q, mu, logvar, dim=1),0)
+        KL = -(log_p_z - log_q_z)
+
+        pseudoReconstructionLoss = F.mse_loss(recon_pseudo.view(-1,self.input_length*self.input_length), pseudo.view(-1, self.input_length*self.input_length), reduction = 'sum')
+
+        plog_p_z = self.log_p_z(p_z)
+        plog_q_z = torch.sum(self.log_Normal_diag(p_z, p_mu, p_logvar, dim=1),0)
+        pKL= -(plog_p_z - plog_q_z)
+
+        if gamma is None:
+            gamma=self.gamma
+        lossSum = (reconstructionLoss + self.beta*KL)+(gamma / self.pseudos)*(pseudoReconstructionLoss + self.beta*pKL)
+        lossAverage = lossSum / (x.shape[0] + gamma)
+        return x.shape[0] * lossAverage
         
     def log_Normal_diag(self, x, mean, log_var, average=False, dim=None):
         #print(log_var)
