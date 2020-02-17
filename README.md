@@ -3,18 +3,22 @@
 # Project Structure
 
 ## Directories
-Top-level directories correspond to **modules** in the project. Specifically:
+Top level directories include:
+
+- **VTP**: the main directory under which the project code is stored
+- **results**: a directory containing all experiment related information for the given module. Experiment data *must* include a `log.txt` file which documents the purpose of the experiment, the naming conventions employed by the experiment, and the corresponding conditions of each trial (e.g. learning rate of \[X] corresponds to lr\[X].py). Experiment data *may include* stdout capture (either via bash redirection or through the tee command), recorded weights, tf-board event files or anything else deemed relevant.
+- **experiments**: a directory containing bash scripts to run experiments and trials, as well as a manifest detailing each experiment. Experiment scripts should be of form exp\[X].py where \[X] is the corresponding experiment index. See experiment section for greater detail.
+
+VTP subdirectories correspond to **modules** in the project. Specifically:
 
 - **processing**
 - **appearance**
 - **dynamics**
+- **utils**: not technically a module, but stores scripts and code to be utilized in other modules
 
 Within a module directory, top-level files should include the main driver file. Subdirectories should include:
 
-- **results**: a directory containing all experiment related information for the given module. Experiment data *must* include a `log.txt` file which documents the purpose of the experiment, the naming conventions employed by the experiment, and the corresponding conditions of each trial (e.g. learning rate of \[X] corresponds to lr\[X].py). Experiment data *may include* stdout capture (either via bash redirection or through the tee command), recorded weights, tf-board event files or anything else deemed relevant.
-- **test_builds**: a directory containing all the various implementations and candidate models for the module. Each file in test_builds should be titled TB\[X] where \[X] is the next available index for test builds. See the test build section below for greater detail. 
-- **experiments**: a directory containing bash scripts to run experiments and trials, as well as a manifest detailing each experiment. Experiment scripts should be of form exp\[X].py where \[X] is the corresponding experiment index. See experiment section for greater detail.
-- (optional) **scripts**: a directory containing any supplementary scripts. May be for testing, debugging or as a component of model operations.
+- **test_builds**: a directory containing all the various implementations and candidate models for the module. Each file in test_builds should be titled [3 letter initialism]\[X] where \[X] is the next available index for test builds. See the test build section below for greater detail. 
 
 ## Branches
 Certain dependencies exist between modules which can make parallel development challenging, such as the fact that the Appearance module may depend on results from the Processing module; however, these do not completely restrict the development of modules in parallel. Parallel development is facilitated through branching.
@@ -55,4 +59,4 @@ Although each module can potentially have test builds, the processing module wil
 
 ## Distributed Mode
 
-Run using `python -m torch.distributed.launch --nproc_per_node=2 Driver.py [args]`
+Run using `python -m torch.distributed.launch --nproc_per_node=[#GPUs, default 2] Driver.py [args]`. Note that when running in distributed mode, the `--batch_size` argument refers to effective batch-size, meaning that each GPU will receive `args.batch_size/#GPUs` per batch. As an example, running on 2 GPUs with batch-size=80 will run each GPU with batch-size=40

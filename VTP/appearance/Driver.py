@@ -27,7 +27,7 @@ startTime = time.time()
 
 #Parses arguments passed from command line
 parser = ArgumentParser(description='AppearanceDriver')
-parser.add_argument('--batch_size', type=int, default=128, metavar='b',
+parser.add_argument('--batch_size', type=int, default=80, metavar='b',
                     help='number of elements per minibatch')
 parser.add_argument('--beta', type=float, default=1.0, metavar='b',
                     help='sets the value of beta for a beta-vae implementation')
@@ -137,7 +137,7 @@ if args.seed:
     torch.manual_seed(args.seed)
     
 writer=None
-if(args.log!='!'):
+if(args.log!='!' and args.local_rank==0):
     if(args.log=='$'):
         writer = SummaryWriter()
     else:
@@ -262,7 +262,7 @@ def train(epoch):
         if batch_idx % args.log_interval == 0 and args.local_rank==0:
             printLoss('train', loss, epoch, batch_idx, len(data), genLoss)
         step=epoch*len(train_loader)+batch_idx
-        if(args.log!='!'):
+        if(args.log!='!' and args.local_rank==0):
             per_item_loss=loss.item()/len(data)
             writer.add_scalar('item_loss',per_item_loss,global_step=step)
 
@@ -373,7 +373,7 @@ else:
             train(epoch)
             test(epoch, args.epochs, startTime)
             
-if(args.log!='!'):
+if(args.log!='!' and args.local_rank==0):
     #res = torch.autograd.Variable(torch.Tensor(1,1,128,128), requires_grad=True).to(device)
     #writer.add_graph(model,res,verbose=True)
     writer.close()
