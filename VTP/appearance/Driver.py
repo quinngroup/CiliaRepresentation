@@ -218,6 +218,21 @@ scale=1
 if args.distributed:
     scale=2
 
+def printLoss(phase, loss, epoch=None, batch_idx=None, data_length=None, genLoss=None):
+    if phase == 'train':
+        print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}\tGenLoss: {:.6f}'.format(
+            epoch, scale*batch_idx * data_length, len(train_loader.dataset),
+            100. * batch_idx / len(train_loader),
+            loss.item() / len(data),
+            genLoss))
+    elif phase == 'average':
+        print('====> Epoch: {} Average loss (main gpu): {:.4f}'.format(
+            epoch, scale*loss / len(train_loader.dataset)))
+    elif phase='test':
+        print('====> Test set loss: {:.4f}'.format(loss))
+        print('====> Generation loss: {:.4f}'.format(genLoss))
+    else:
+        print('Loss printing error')
 
 def train(epoch):
     if args.distributed:
@@ -245,11 +260,7 @@ def train(epoch):
         genLoss = MODEL.loss_function(recon_batch, data, mu, logvar, z, pseudos, recon_pseudos, p_mu, p_logvar, p_z, gamma=0).item() / len(data)
         optimizer.step()
         if batch_idx % args.log_interval == 0 and args.local_rank==0:
-            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}\tGenLoss: {:.6f}'.format(
-                epoch, scale*batch_idx * len(data), len(train_loader.dataset),
-                100. * batch_idx / len(train_loader),
-                loss.item() / len(data),
-                genLoss))
+            printLoss('train', loss, epoch, batch_idx, len(data), genLoss)
         step=epoch*len(train_loader)+batch_idx
         if(args.log!='!'):
             per_item_loss=loss.item()/len(data)
@@ -260,8 +271,7 @@ def train(epoch):
     process *half* the data but would otherwise normalize by the length of the entire dataset    
     '''
     if args.local_rank==0:
-        print('====> Epoch: {} Average loss (main gpu): {:.4f}'.format(
-              epoch, scale*train_loss / len(train_loader.dataset)))
+        printLoss('average', train_loss, epoch)
     if(args.schedule>0):
           scheduler.step(scale*train_loss / len(train_loader.dataset))
 
@@ -294,8 +304,7 @@ def test(epoch, max, startTime):
     test_loss /= len(test_loader.dataset)/scale
     gen_loss /= len(test_loader.dataset)/scale
     if args.local_rank==0:
-        print('====> Test set loss: {:.4f}'.format(test_loss))
-        print('====> Generation loss: {:.4f}'.format(gen_loss))
+        printLoss('test', test_loss, genLoss=gen_loss)
     if(epoch == 1):
         lastLoss = test_loss
     elif not args.noEarlyStop:
