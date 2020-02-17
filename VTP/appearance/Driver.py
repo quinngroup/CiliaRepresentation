@@ -74,7 +74,7 @@ parser.add_argument('--print_pseudos', type = int, default=0, metavar='pp',
                     help='Plot pseudos. Controls the number of pseudo inputs to be displayed')
 parser.add_argument('--pseudos', type=int, default=10, metavar='p',
                     help='Number of pseudo-inputs (default: 10)')
-parser.add_argument('--reg2', type = float, default=0, metavar='rg2',
+parser.add_argument('--reg2', type = float, default=5e-4, metavar='rg2',
                     help='coefficient for L2 weight decay')
 parser.add_argument('--repeat', action='store_true', default=False,
                     help='determines whether to enact further training after loading weights')
