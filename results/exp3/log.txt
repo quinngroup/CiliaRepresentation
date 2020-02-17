@@ -1,0 +1,8 @@
+Exp3 Experiment Log:
+=======================================================================================
+Date: 2/17/2020
+Model Architecture: NVP.py
+Non-default arguments: Tests the pseudoinput learning rates of of 1e-5, 7e-6, 4e-6, 1e-6, 7e-7, 4e-7 and 1e-7 with learning rate 1e-5 and a batch size of 180.
+Weights saved as plr[pseudo_learning_rate].h5
+Logs saved under plr[pseudo_learning_rate]
+=======================================================================================
