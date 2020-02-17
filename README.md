@@ -59,4 +59,4 @@ Although each module can potentially have test builds, the processing module wil
 
 ## Distributed Mode
 
-Run using `python -m torch.distributed.launch --nproc_per_node=[#GPUs, default 2] Driver.py [args]`. Note that when running in distributed mode, the `--batch_size` argument refers to effective batch-size, meaning that each GPU will receive `args.batch_size/#GPUs` per batch. As an example, running on 2 GPUs with batch-size=80 will run each GPU with batch-size=40
+Run using `python -m torch.distributed.launch --nproc_per_node=[#GPUs, default 2] Driver.py [args]`. Note that when running in distributed mode, the `--batch_size` argument refers to per-gpu batch size, meaning that each GPU will receive `args.batch_size` per batch. As an example, running on 2 GPUs with batch-size=80 will run each GPU with batch-size=80 for an effective batch size of 160.
