@@ -6,3 +6,6 @@ Non-default arguments: Tests batch sizes of 10, 20, 40, and 80 with learning rat
 Weights saved as bs[batch_size].h5
 Logs saved under bs[batch_size]
 =======================================================================================
+Results: Enough variance in dataset that using low batch sizes to exploit induced variance seems unnecessary
+Conclusion: Batch size 80 per card is recommended. Further testing in Exp7 recommended.
+=======================================================================================
