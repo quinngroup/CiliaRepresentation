@@ -144,7 +144,7 @@ if(args.log!='!' and args.local_rank==0):
         writer = SummaryWriter(log_dir=args.log)
 
 
-model = NVP(args.input_length, args.batch_size, args.lsdim, args.pseudos, args.beta, args.gamma, device, args.logvar_bound).cuda()
+model = NVP(args.input_length, args.lsdim, args.pseudos, args.beta, args.gamma, device, args.logvar_bound).cuda()
 optimizer = torch.optim.Adam([{'params': model.vae.parameters()},
                         {'params': model.pseudoGen.parameters(), 'lr': args.plr}],
                         lr=args.lr, weight_decay=args.reg2)
