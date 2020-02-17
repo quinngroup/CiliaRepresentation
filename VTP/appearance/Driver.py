@@ -223,7 +223,7 @@ def printLoss(phase, loss, epoch=None, batch_idx=None, data_length=None, genLoss
         print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}\tGenLoss: {:.6f}'.format(
             epoch, scale*batch_idx * data_length, len(train_loader.dataset),
             100. * batch_idx / len(train_loader),
-            loss.item() / len(data),
+            loss.item() / data_length,
             genLoss))
     elif phase == 'average':
         print('====> Epoch: {} Average loss (main gpu): {:.4f}'.format(
