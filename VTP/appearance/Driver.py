@@ -119,7 +119,6 @@ args.distributed = False
 if 'WORLD_SIZE' in os.environ:
     worldCount=int(os.environ['WORLD_SIZE'])
     args.distributed = worldCount > 1
-    args.batch_size=int(args.batch_size/worldCount)
     
 if args.distributed:
     # FOR DISTRIBUTED:  Set the device according to local_rank.
