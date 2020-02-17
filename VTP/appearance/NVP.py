@@ -168,8 +168,7 @@ class NVP(nn.Module):
 
         if gamma is None:
             gamma=self.gamma
-        gamma=self.batch_size*gamma
-        return (reconstructionLoss + self.beta*KL)+gamma*(pseudoReconstructionLoss + self.beta*pKL)
+        return ((reconstructionLoss + self.beta*KL)+(self.batch_size * gamma / self.pseudos)*(pseudoReconstructionLoss + self.beta*pKL))/(1 + gamma)
         
     def log_Normal_diag(self, x, mean, log_var, average=False, dim=None):
         #print(log_var)
