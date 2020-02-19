@@ -60,3 +60,13 @@ Although each module can potentially have test builds, the processing module wil
 ## Distributed Mode
 
 Run using `python -m torch.distributed.launch --nproc_per_node=[#GPUs, default 2] Driver.py [args]`. Note that when running in distributed mode, the `--batch_size` argument refers to per-gpu batch size, meaning that each GPU will receive `args.batch_size` per batch. As an example, running on 2 GPUs with batch-size=80 will run each GPU with batch-size=80 for an effective batch size of 160.
+
+## Live logging
+
+To get real-time updates on the progress of a model, you can launch tensorboard on the remote server while observing the results on your local machine by:
+
+1. ssh into the remote server by using `ssh -L 16006:127.0.0.1:6006 user@server`. This will forward `port 6006` from `server` to `port 16006` on your local machine.
+
+2. On the remote server, run tensorboard as you normall would (`tensorboard --logdir [log directory]`)
+
+3. On your machine, go to http://127.0.0.1:16006
