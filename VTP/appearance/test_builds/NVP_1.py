@@ -25,17 +25,17 @@ class VAE(nn.Module):
         self.conv1C = nn.Conv2d(64, 64, 5,padding=2)
         self.conv1D = nn.Conv2d(64, 1, 5,padding=2)
 
-        self.conv2A = nn.Conv2d(1, 64, 5,padding=2)
+        self.conv2A = nn.Conv2d(64, 64, 5,padding=2)
         self.conv2B = nn.Conv2d(64, 64, 5,padding=2)
         self.conv2C = nn.Conv2d(64, 64, 5,padding=2)
         self.conv2D = nn.Conv2d(64, 1, 5,padding=2)
 
-        self.conv3A = nn.Conv2d(1, 64, 5,padding=2)
+        self.conv3A = nn.Conv2d(64, 64, 5,padding=2)
         self.conv3B = nn.Conv2d(64, 64, 5,padding=2)
         self.conv3C = nn.Conv2d(64, 64, 5,padding=2)
         self.conv3D = nn.Conv2d(64, 1, 5,padding=2)
 
-        self.conv4A = nn.Conv2d(1, 64, 5,padding=2)
+        self.conv4A = nn.Conv2d(64, 64, 5,padding=2)
         self.conv4B = nn.Conv2d(64, 64, 5,padding=2)
         self.conv4C = nn.Conv2d(64, 64, 5,padding=2)
         self.conv4D = nn.Conv2d(64, 1, 5,padding=2)

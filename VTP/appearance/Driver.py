@@ -3,7 +3,7 @@ from math import ceil
 import matplotlib.colors as colors
 import matplotlib.pyplot as plt
 from NVP import NVP
-from test_builds import *
+from test_builds import NVP_1
 from sklearn.cluster import DBSCAN
 from sklearn.manifold import TSNE
 from sklearn.preprocessing import StandardScaler
@@ -149,7 +149,7 @@ arguments=[args.input_length, args.lsdim, args.pseudos, args.beta, args.gamma, d
 if args.model=='nvp':
     model = NVP(*arguments)
 elif args.model=='nvp1':
-    model = NVP_1(*arguments)
+    model = NVP_1.NVP_1(*arguments)
 
 model.cuda()
 optimizer = torch.optim.Adam([{'params': model.vae.parameters()},
