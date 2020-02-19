@@ -3,6 +3,7 @@ from math import ceil
 import matplotlib.colors as colors
 import matplotlib.pyplot as plt
 from NVP import NVP
+from test_builds import *
 from sklearn.cluster import DBSCAN
 from sklearn.manifold import TSNE
 from sklearn.preprocessing import StandardScaler
@@ -62,6 +63,8 @@ parser.add_argument('--lr', type = float, default=1e-5, metavar='lr',
 parser.add_argument('--lsdim', type = int, default=10, metavar='ld',
                     help='sets the number of dimensions in the latent space. should be >1. If  <3, will generate graphical representation of latent without TSNE projection')
                     #current implementation may not be optimal for dims above 4
+parser.add_argument('--model', type=str, default='nvp',
+                    help='determines which model to use')
 parser.add_argument('--no_cuda', action='store_true', default=False,
                     help='enables CUDA training')
 parser.add_argument('--noEarlyStop', action='store_true', default=False,
@@ -142,8 +145,13 @@ if(args.log!='!' and args.local_rank==0):
     else:
         writer = SummaryWriter(log_dir=args.log)
 
+arguments=[args.input_length, args.lsdim, args.pseudos, args.beta, args.gamma, device, args.logvar_bound]
+if args.model=='nvp':
+    model = NVP(*arguments)
+elif args.model=='nvp1':
+    model = NVP_1(*arguments)
 
-model = NVP(args.input_length, args.lsdim, args.pseudos, args.beta, args.gamma, device, args.logvar_bound).cuda()
+model.cuda()
 optimizer = torch.optim.Adam([{'params': model.vae.parameters()},
                         {'params': model.pseudoGen.parameters(), 'lr': args.plr}],
                         lr=args.lr, weight_decay=args.reg2)
