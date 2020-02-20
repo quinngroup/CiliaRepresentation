@@ -214,6 +214,8 @@ test_loader = DataLoader(
     sampler=test_sampler)
 
 
+if args.log_image>0 and args.graph:
+    imagePace=len(train_loader.dataset)//(args.batch_size*args.log_image)
 
 
 stopEarly = False
@@ -248,8 +250,6 @@ def printLoss(phase, loss, epoch=None, batch_idx=None, data_length=None, genLoss
 def train(epoch):
     imagePace=None
     before, after=None,None
-    if args.log_image>0 and args.graph:
-        imagePace=len(train_loader.dataset)//(len(data)*args.log_image)
     if args.distributed:
         train_sampler.set_epoch(epoch)
     model.train()
