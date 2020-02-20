@@ -259,7 +259,7 @@ def train(epoch):
         data = data.to(device)
         optimizer.zero_grad()
         recon_batch, mu, logvar, z = model(data)
-        if imagePace is not None and batch_idx % imagePace == 0:
+        if imagePace is not None and args.local_rank==0 and batch_idx % imagePace == 0:
             before=data[0].cpu().detach().numpy()
             after=recon_batch[0].cpu().detach().numpy()
             image_step=(epoch-1)*imagePace+(batch_idx//imagePace)
