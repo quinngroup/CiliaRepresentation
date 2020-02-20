@@ -265,7 +265,7 @@ def train(epoch):
             before=data[0].cpu().detach().numpy()
             after=recon_batch[0].cpu().detach().numpy()
             print('IMAGE WRITING DEBUG: ',before.shape, after.shape)
-            writer.add_images('reconstructions', np.concatenate((before,after)), (epoch-1)*imagePace+(batch_idx//imagePace),dataformats='NCHW')
+            writer.add_images('reconstructions', np.concatenate((before[np.newaxis],after[np.newaxis])), (epoch-1)*imagePace+(batch_idx//imagePace),dataformats='NCHW')
 
 
         #For model module access, must reference model.module 
