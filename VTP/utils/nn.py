@@ -2,6 +2,47 @@ import torch
 from torch import nn, eye
 from torch.nn import functional as F
 from torch.nn import LeakyReLU
+from scipy.ndimage import gaussian_filter
+
+
+'''
+Gaussian Filter Layer
+
+@author Meekail Zain
+'''
+class GaussianLayer(nn.Module):
+    '''
+    Constructs a gaussian filter layer leveraging
+    scipy's ndimage gaussian filter functionality
+    
+    @param channels_in number of input channels
+    @param channels_out number of output channels
+    @param kernel_size size of a kernel
+    @param sigma sigma value for gaussian filter, 
+    or how much to 'blur' the image
+    '''
+    
+    def __init__(self,channels_in,channels_out,kernel_size,sigma):
+        super(GaussianLayer, self).__init__()
+        assert kernel_size%2 == 1, "please choose an odd kernel size"
+        self.r=(kernel_size-1)//2
+        self.sigma=sigma
+        self.kernel_size=kernel_size
+        self.seq = nn.Sequential(
+            nn.ReflectionPad2d(self.r), 
+            nn.Conv2d(channels_in, channels_out, kernel_size, bias=None, groups=channels_in)
+        )
+
+        self.weights_init()
+    def forward(self, x):
+        return self.seq(x)
+
+    def weights_init(self):
+        n= np.zeros((self.kernel_size,self.kernel_size))
+        n[self.r,self.r] = 1
+        k = gaussian_filter(n,sigma=self.sigma,truncate=self.r if self.r < 6*self.sigma else 6*self.sigma)
+        for name, f in self.named_parameters():
+            f.data.copy_(torch.from_numpy(k))
 
 '''
 Depthwise-separable convolutional layer
