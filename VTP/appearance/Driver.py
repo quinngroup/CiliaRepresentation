@@ -385,7 +385,7 @@ if(args.load == ''):
         if(not stopEarly):
             train(epoch)
             test(epoch, args.epochs, startTime)
-else:
+elif args.local_rank==0:
     checkpoint=torch.load(args.load)
     model.load_state_dict(checkpoint['model_state_dict'])
     optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
