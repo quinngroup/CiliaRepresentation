@@ -43,7 +43,7 @@ parser.add_argument('--failCount', type=str, default='r', metavar='fc',
 parser.add_argument('--gamma', type = float, default=.05, metavar='g',
                     help='Pseudo-loss weight')
 parser.add_argument('--graph', action='store_true', default= False,
-                    help='flag to determine whether or not to run automatic graphing')      
+                    help='flag to determine whether or not to generate a tensorboard graph')      
 parser.add_argument('--input_height', type=int, default=128, metavar='ih',
                     help='height of each patch')
 parser.add_argument('--input_length', type=int, default=128, metavar='il',
@@ -95,6 +95,8 @@ parser.add_argument('--tolerance', type = float, default=.1, metavar='tol',
                     help='tolerance value for early stopping')
 parser.add_argument('--tsne', action='store_true', default=False,
                     help='Uses TSNE projection instead of UMAP.')
+parser.add_argument('--vis', action='store_true', default= False,
+                    help='flag to determine whether or not to automatically visalize latent space')      
 parser.add_argument('--workers', default=4, type=int, metavar='N',
                     help='number of data loading workers (default: 4)')
                     
@@ -333,7 +335,7 @@ def test(epoch, max, startTime):
         cmap = colors.ListedColormap(['#e6194B', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#42d4f4', '#f032e6', '#bfef45', '#fabebe'])
         
         #Handling different dimensionalities
-        if(args.graph):
+        if(args.vis):
             if (args.lsdim < 3) :
                 z1 = torch.Tensor.cpu(zTensor[:, 0]).numpy()
                 z2 = torch.Tensor.cpu(zTensor[:, 1]).numpy()
@@ -375,12 +377,13 @@ else:
     model.load_state_dict(checkpoint['model_state_dict'])
     optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
     test(args.epochs, args.epochs, startTime)
-    if(args.repeat==True):
+    if(args.repeat):
         for epoch in range(1, args.epochs + 1):
             train(epoch)
             test(epoch, args.epochs, startTime)
             
 if(args.log!='!' and args.local_rank==0):
-    #res = torch.autograd.Variable(torch.Tensor(1,1,128,128), requires_grad=True).to(device)
-    #writer.add_graph(model,res,verbose=True)
+    if args.graph:
+        dummy = torch.autograd.Variable(torch.Tensor(1,1,128,128), requires_grad=True).to(device)
+        writer.add_graph(model,dummy,verbose=True)
     writer.close()
