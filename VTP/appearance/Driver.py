@@ -18,6 +18,7 @@ from VTP.utils import Datasets
 import apex
 from apex import amp
 import os
+import numpy as np
 '''
 Appearance Module Driver
 
