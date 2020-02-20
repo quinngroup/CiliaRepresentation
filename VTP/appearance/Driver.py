@@ -215,7 +215,6 @@ test_loader = DataLoader(
     sampler=test_sampler)
 
 
-print('IMAGE WRITING DEBUG: ',args.log_image,args.graph)
 imagePace=None
 if args.log_image>0 and args.log!='!':
     imagePace=len(train_loader.dataset)//(args.batch_size*args.log_image)
@@ -260,12 +259,11 @@ def train(epoch):
         data = data.to(device)
         optimizer.zero_grad()
         recon_batch, mu, logvar, z = model(data)
-        print('IMAGE WRITING DEBUG: ',batch_idx % imagePace)
         if imagePace is not None and batch_idx % imagePace == 0:
             before=data[0].cpu().detach().numpy()
             after=recon_batch[0].cpu().detach().numpy()
-            print('IMAGE WRITING DEBUG: ',before.shape, after.shape)
-            writer.add_images('reconstructions', np.concatenate((before[np.newaxis],after[np.newaxis])), (epoch-1)*imagePace+(batch_idx//imagePace),dataformats='NCHW')
+            image_step=(epoch-1)*imagePace+(batch_idx//imagePace)
+            writer.add_images('reconstructions/'+str(image_step), np.concatenate((before[np.newaxis],after[np.newaxis])), image_step,dataformats='NCHW')
 
 
         #For model module access, must reference model.module 
