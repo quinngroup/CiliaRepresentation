@@ -262,7 +262,7 @@ def train(epoch):
         if imagePace is not None and args.local_rank==0 and batch_idx % imagePace == 0:
             before=data[0].cpu().detach().numpy()
             after=recon_batch[0].cpu().detach().numpy()
-            image_step=(epoch-1)*imagePace+(batch_idx//imagePace)
+            image_step=(epoch-1)*args.log_image+(batch_idx//imagePace)
             writer.add_images('reconstructions/'+str(image_step), np.concatenate((before[np.newaxis],after[np.newaxis])), image_step,dataformats='NCHW')
 
 
