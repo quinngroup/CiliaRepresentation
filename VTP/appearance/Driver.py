@@ -217,7 +217,7 @@ test_loader = DataLoader(
 
 print('IMAGE WRITING DEBUG: ',args.log_image,args.graph)
 imagePace=None
-if args.log_image>0 and args.graph:
+if args.log_image>0 and args.log!='!':
     imagePace=len(train_loader.dataset)//(args.batch_size*args.log_image)
 
 
