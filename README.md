@@ -70,3 +70,12 @@ To get real-time updates on the progress of a model, you can launch tensorboard 
 2. On the remote server, run tensorboard as you normall would (`tensorboard --logdir [log directory]`)
 
 3. On your machine, go to http://127.0.0.1:16006
+
+## Members
+
+1. Meekail Zain (Project Lead)
+2. Sonia Rao
+3. Quinn Wyner
+4. Nathan Safir
+5. Alex Eldridge
+6. Bella Humphrey
