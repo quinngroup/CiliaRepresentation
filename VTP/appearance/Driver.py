@@ -389,12 +389,12 @@ elif args.local_rank==0:
     checkpoint=torch.load(args.load)
     model.load_state_dict(checkpoint['model_state_dict'])
     optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-    test(args.epochs, args.epochs, startTime)
-    if(args.repeat):
-        for epoch in range(1, args.epochs + 1):
-            train(epoch)
-            test(epoch, args.epochs, startTime)
-            
+test(args.epochs, args.epochs, startTime)
+if(args.repeat):
+    for epoch in range(1, args.epochs + 1):
+        train(epoch)
+        test(epoch, args.epochs, startTime)
+        
 if(args.log!='!' and args.local_rank==0):
     if args.graph:
         dummy = torch.autograd.Variable(torch.Tensor(1,1,128,128), requires_grad=True).to(device)
