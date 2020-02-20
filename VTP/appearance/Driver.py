@@ -56,6 +56,8 @@ parser.add_argument('--log', type=str, default='!', metavar='lg',
                     help='flag to determine whether to use tensorboard for logging. Default \'!\' is read to mean no logging')      
 parser.add_argument('--log_interval', type=int, default=10, metavar='N',
                     help='how many batches to wait before logging training status')
+parser.add_argument('--log_image', type=int, default=0, metavar='N',
+                    help='how many images to record to tensorboard per epoch')
 parser.add_argument('--logvar_bound', type=float, default=-1.0, metavar='lb',
                     help='Lower bound on logvar (default: -1.0)')
 parser.add_argument('--lr', type = float, default=1e-5, metavar='lr',
@@ -244,6 +246,10 @@ def printLoss(phase, loss, epoch=None, batch_idx=None, data_length=None, genLoss
         print('Loss printing error')
 
 def train(epoch):
+    imagePace=None
+    before, after=None,None
+    if args.log_image>0 and args.graph:
+        imagePace=len(train_loader.dataset)//(len(data)*args.log_image)
     if args.distributed:
         train_sampler.set_epoch(epoch)
     model.train()
@@ -252,6 +258,12 @@ def train(epoch):
         data = data.to(device)
         optimizer.zero_grad()
         recon_batch, mu, logvar, z = model(data)
+        if imagePace is not None and batch_idx % imagePace == 0:
+            before=data[0].numpy()
+            after=recon_batch[0].numpy()
+            print ('IMAGE WRITING DEBUG: ',before.shape, after.shape)
+            writer.add_images('reconstructions', np.concatenate((before,after)), (epoch-1)*imagePace+(batch_idx//imagePace),dataformats='NCHW')
+
 
         #For model module access, must reference model.module 
         #if distributed to get through the distributed wrapper class
@@ -385,5 +397,5 @@ else:
 if(args.log!='!' and args.local_rank==0):
     if args.graph:
         dummy = torch.autograd.Variable(torch.Tensor(1,1,128,128), requires_grad=True).to(device)
-        writer.add_graph(model,dummy,verbose=True)
+        writer.add_graph(model.eval(),dummy,verbose=True)
     writer.close()
