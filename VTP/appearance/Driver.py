@@ -261,8 +261,8 @@ def train(epoch):
         recon_batch, mu, logvar, z = model(data)
         print('IMAGE WRITING DEBUG: ',batch_idx % imagePace)
         if imagePace is not None and batch_idx % imagePace == 0:
-            before=data[0].cpu().numpy()
-            after=recon_batch[0].cpu().numpy()
+            before=data[0].cpu().detach().numpy()
+            after=recon_batch[0].cpu().detach().numpy()
             print('IMAGE WRITING DEBUG: ',before.shape, after.shape)
             writer.add_images('reconstructions', np.concatenate((before,after)), (epoch-1)*imagePace+(batch_idx//imagePace),dataformats='NCHW')
 
