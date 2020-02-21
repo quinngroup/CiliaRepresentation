@@ -3,5 +3,6 @@ Exp11 Experiment Log:
 Date: 2/21/2020
 Model Architecture: NVP.py and NVP_1.py
 Non-default arguments: Using the most recent NVP (updated default parameters) compare against NVP_1 over 30 epochs each.
-Logs saved under plr[pseudo_learning_rate]
+Weights saved under [NVP_model].h5
+Logs saved under [NVP_model]
 =======================================================================================
