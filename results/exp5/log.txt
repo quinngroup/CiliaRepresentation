@@ -1,0 +1,8 @@
+Exp5 Experiment Log:
+=======================================================================================
+Date: 2/21/2020
+Model Architecture: NVP.py
+Non-default arguments: Tests gamma coefficients of 1.0, 5e-1, 1e-1, 5e-2, and 0.
+Weights saved as g[gamma_coefficient].h5
+Logs saved under g[gamma_coefficient]
+=======================================================================================

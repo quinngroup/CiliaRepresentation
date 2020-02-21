@@ -1,0 +1,8 @@
+Exp4 Experiment Log:
+=======================================================================================
+Date: 2/16/2020
+Model Architecture: NVP.py
+Non-default arguments: Tests coefficients for L2 weight decay {1e-7, 1e-6, 1e-5, 1e-4, 1e-3} over 30 epochs.
+Weights saved as wd[weight_decay].h5
+Logs saved under wd[weight_decay]
+=======================================================================================
