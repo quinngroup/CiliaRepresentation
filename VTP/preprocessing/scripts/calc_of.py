@@ -22,7 +22,7 @@ def horn_schunck(arr,frames):
             curl_arr[i] = curl(u,v)
             def_arr[i] = curl(u,v)
             optflow[i] = [u,v]
-    return optflow, curl
+    return optflow, curl_arr, def_arr
 
 def pyflow(arr,frames):
     '''
@@ -40,7 +40,7 @@ def pyflow(arr,frames):
         curl_arr[i] = curl(u,v)
         def_arr[i] = curl(u,v)
         optflow[i] = [u,v]
-    return optflow,curl_arr
+    return optflow,curl_arr,def_arr
 
 def farneback(arr,frames):
     '''
@@ -58,4 +58,4 @@ def farneback(arr,frames):
         optflow[i] = [of[...,0],of[...,1]]
         curl_arr[i] = curl(of[...,0],of[...,1])
         def_arr[i] = curl(u,v)
-    return optflow,curl_arr
+    return optflow,curl_arr,def_arr
