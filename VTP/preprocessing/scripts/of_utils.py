@@ -1,5 +1,5 @@
 import numpy
-import cvapi.cv2api as cv2
+import cv2
 import scipy.signal
 
 def deriv(u, v):
@@ -33,7 +33,7 @@ def deriv(u, v):
     xv = scipy.signal.sepfir2d(v, dxg_filt, g_filt)
     yv = scipy.signal.sepfir2d(v, g_filt, dxg_filt)
 
-    return [uu, vu, uv, vv]
+    return [xu, yu, xv, yv]
 
 def curl(u, v):
     '''
@@ -61,5 +61,5 @@ def deformation(u, v):
     uu, vu, uv, vv = deriv(u, v)
     return [uu - vv, uv + vu]
 
-def main():
+#def main():
     # no driver
