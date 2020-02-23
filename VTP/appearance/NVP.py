@@ -22,19 +22,23 @@ class VAE(nn.Module):
         #Encoding Layers
         self.conv1A = nn.Conv2d(1, 64, 5,padding=2)
         self.conv1B = nn.Conv2d(64, 64, 5,padding=2)
-        self.conv1C = nn.Conv2d(64, 1, 5,padding=2)
+        self.conv1C = nn.Conv2d(64, 64, 5,padding=2)
+        self.conv1D = nn.Conv2d(64, 1, 5,padding=2)
 
-        self.conv2A = nn.Conv2d(1, 64, 5,padding=2)
+        self.conv2A = nn.Conv2d(64, 64, 5,padding=2)
         self.conv2B = nn.Conv2d(64, 64, 5,padding=2)
-        self.conv2C = nn.Conv2d(64, 1, 5,padding=2)
+        self.conv2C = nn.Conv2d(64, 64, 5,padding=2)
+        self.conv2D = nn.Conv2d(64, 1, 5,padding=2)
 
-        self.conv3A = nn.Conv2d(1, 64, 5,padding=2)
+        self.conv3A = nn.Conv2d(64, 64, 5,padding=2)
         self.conv3B = nn.Conv2d(64, 64, 5,padding=2)
-        self.conv3C = nn.Conv2d(64, 1, 5,padding=2)
+        self.conv3C = nn.Conv2d(64, 64, 5,padding=2)
+        self.conv3D = nn.Conv2d(64, 1, 5,padding=2)
 
-        self.conv4A = nn.Conv2d(1, 64, 5,padding=2)
+        self.conv4A = nn.Conv2d(64, 64, 5,padding=2)
         self.conv4B = nn.Conv2d(64, 64, 5,padding=2)
-        self.conv4C = nn.Conv2d(64, 1, 5,padding=2)
+        self.conv4C = nn.Conv2d(64, 64, 5,padding=2)
+        self.conv4D = nn.Conv2d(64, 1, 5,padding=2)
 
         self.conv5 = nn.Conv2d(5,64,5,padding=2)
         self.conv6 = nn.Conv2d(64,64,5,padding=2)
@@ -64,22 +68,23 @@ class VAE(nn.Module):
         x=F.leaky_relu(self.conv1A(x))
         x=F.leaky_relu(self.conv1B(x))
         x=F.leaky_relu(F.max_pool2d(self.conv1C(x),(2,2)))
-        y2=x.clone()
+        y2=F.leaky_relu(self.conv1D(x))
         
         x=F.leaky_relu(self.conv2A(x))
         x=F.leaky_relu(self.conv2B(x))
         x=F.leaky_relu(F.max_pool2d(self.conv2C(x),(2,2)))
-        y3=x.clone()
+        y3=F.leaky_relu(self.conv2D(x))
 
         x=F.leaky_relu(self.conv3A(x))
         x=F.leaky_relu(self.conv3B(x))
         x=F.leaky_relu(F.max_pool2d(self.conv3C(x),(2,2)))
-        y4=x.clone()
+        y4=F.leaky_relu(self.conv3D(x))
 
         x=F.leaky_relu(self.conv4A(x))
         x=F.leaky_relu(self.conv4B(x))
         x=F.leaky_relu(F.max_pool2d(self.conv4C(x),(2,2)))
-        
+        x=F.leaky_relu(self.conv4D(x))
+
         y1=y1
         y2=F.upsample(y2,scale_factor=2)
         y3=F.upsample(y3,scale_factor=4)
@@ -135,9 +140,9 @@ class PseudoGen(nn.Module):
     def forward(self, x):
         return torch.sigmoid(self.means(x))
 
-class NVP(nn.Module):
+class NVP_1(nn.Module):
     def __init__(self, input_length, lsdim, pseudos, beta, gamma, device, logvar_bound):
-        super(NVP, self).__init__()
+        super(NVP_1, self).__init__()
         
         self.input_length = input_length
         self.pseudos = pseudos
