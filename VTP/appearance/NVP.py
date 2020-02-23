@@ -41,19 +41,25 @@ class VAE(nn.Module):
         self.conv4D = nn.Conv2d(64, 1, 5,padding=2)
 
         self.conv5 = nn.Conv2d(5,64,5,padding=2)
+        
         self.conv6 = nn.Conv2d(64,64,5,padding=2)
         self.conv7 = nn.Conv2d(64,64,5,padding=2)
         self.conv8 = nn.Conv2d(64,64,5,padding=2)
+        
         self.conv9 = nn.Conv2d(64,64,5,padding=2)
         self.conv10 = nn.Conv2d(64,64,5,padding=2)
         self.conv11 = nn.Conv2d(64,64,5,padding=2)
-        self.conv12 = nn.Conv2d(64,32,5,padding=2)
-        self.conv13 = nn.Conv2d(32,4,5,padding=2)
         
-        self.fcc=nn.Linear(16*16*4,128)
+        self.conv12 = nn.Conv2d(64,64,5,padding=2)
+        self.conv13 = nn.Conv2d(64,64,5,padding=2)
+        self.conv14 = nn.Conv2d(64,64,5,padding=2)
         
-        self.mean = nn.Linear(128, lsdim)
-        self.logvar = nn.Linear(128, lsdim)
+        self.conv15 = nn.Conv2d(64,4,1)
+        
+        self.fcc=nn.Linear(16*16*4,1000)
+        
+        self.mean = nn.Linear(1000, lsdim)
+        self.logvar = nn.Linear(1000, lsdim)
 
         self.sbd=spatial_broadcast_decoder(input_length=self.input_length,device=self.device,lsdim=self.lsdim)
         #Create an idle input for calling pseudo-inputs
@@ -93,21 +99,25 @@ class VAE(nn.Module):
 
         x=torch.cat((y1,y2,y3,y4,x),dim=1)
 
-        x=F.leaky_relu(self.conv5(x))
-        x=F.leaky_relu(self.conv6(x))      
+        x_=F.leaky_relu(self.conv5(x))
+        
+        x=F.leaky_relu(self.conv6(x_))      
         x=F.leaky_relu(self.conv7(x))
-        x=F.max_pool2d(x,(2,2))
-                
         x=F.leaky_relu(self.conv8(x))
-        x=F.leaky_relu(self.conv9(x))      
-        x=F.leaky_relu(self.conv10(x))
-        x=F.max_pool2d(x,(2,2))
-
+        x_=F.max_pool2d(x+x_,(2,2))
+                
+        x=F.leaky_relu(self.conv9(x_))
+        x=F.leaky_relu(self.conv10(x))      
         x=F.leaky_relu(self.conv11(x))
-        x=F.leaky_relu(self.conv12(x))     
-        x=F.leaky_relu(self.conv13(x))
-        x=F.max_pool2d(x,(2,2))
+        x_=F.max_pool2d(x+x_,(2,2))
 
+        x=F.leaky_relu(self.conv12(x_))
+        x=F.leaky_relu(self.conv13(x))     
+        x=F.leaky_relu(self.conv14(x))
+        x=F.max_pool2d(x+x_,(2,2))
+        
+        x=F.leaky_relu(self.conv15(x))
+        
         x=x.view(-1,16*16*4)
         x=F.leaky_relu(self.fcc(x))
 
