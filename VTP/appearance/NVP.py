@@ -140,9 +140,9 @@ class PseudoGen(nn.Module):
     def forward(self, x):
         return torch.sigmoid(self.means(x))
 
-class NVP_1(nn.Module):
+class NVP(nn.Module):
     def __init__(self, input_length, lsdim, pseudos, beta, gamma, device, logvar_bound):
-        super(NVP_1, self).__init__()
+        super(NVP, self).__init__()
         
         self.input_length = input_length
         self.pseudos = pseudos
