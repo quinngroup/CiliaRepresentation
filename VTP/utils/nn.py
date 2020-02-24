@@ -286,6 +286,35 @@ class spatial_broadcast_decoder_asymmetric(nn.Module):
         return x
 
 """
+ResNet 'deeper' block as used in ResNet-110
+
+@author Meekail Zain
+"""
+class Residual(nn.Module):
+    def __init__(self,pixelwise_channel=256,conv_channel=64,kernel_size=3):
+        super(ResNetBlock, self).__init__()
+        self.conv1=nn.Conv2d(pixelwise_channel,conv_channel,1)
+        self.conv2=nn.Conv2d(conv_channel,conv_channel,kernel_size)
+        self.conv3=nn.Conv2d(conv_channel,pixelwise_channel,1)
+
+    '''
+    Applies the ResNetBlock to an input x
+    
+    @param x the input
+    @return the output of the ResNetBlock
+    '''
+    def forward(self, x):
+        x_ = x.clone()
+        x=F.leaky_relu(self.conv1())
+        x=F.leaky_relu(self.conv2())
+        x=F.leaky_relu(self.conv3())
+        return x+x_
+        
+        
+        
+        
+
+"""
 ResNet-style block that preserves dimensionality of input
 
 @author Quinn Wyner
