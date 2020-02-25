@@ -262,7 +262,6 @@ def train(epoch):
     roll_loss = 0 
     for batch_idx, data in enumerate(train_loader):
         data = data.to(device)
-        optimizer.zero_grad()
         recon_batch, mu, logvar, z = model(data)
         if imagePace is not None and args.local_rank==0 and batch_idx % imagePace == 0:
             before=data[0].cpu().detach().numpy()
