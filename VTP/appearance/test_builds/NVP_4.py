@@ -41,7 +41,7 @@ class VAE(nn.Module):
         self.conv4C = nn.Conv2d(64, 64, 5,padding=2)
         self.conv4D = nn.Conv2d(64, 1, 5,padding=2)
 
-        # self.conv5
+        self.pw_conv0 = nn.Conv2d(5, 256, 1)
 
         self.res1_x = [Residual() for k in range(3)]
         self.pw_conv1 = nn.Conv2d(256, 512, 1)
@@ -51,7 +51,6 @@ class VAE(nn.Module):
         self.pw_conv3 = nn.Conv2d(1024, 2048, 1)
         self.res4_x = [Residual(pixelwise_channel=2048, conv_channel=512) for k in range(3)]
 
-        # REMOVE THIS NOTE BEFORE TESTING: texture resolution phase ends here
 
         self.fcc=nn.Linear(2048,1000)
 
@@ -97,6 +96,8 @@ class VAE(nn.Module):
         x=F.upsample(x,scale_factor=16)
 
         x=torch.cat((y1,y2,y3,y4,x),dim=1)
+
+        x = F.leaky_relu(self.pw_conv0(x))
 
         for r in self.res1_x:
             x = r(x)
