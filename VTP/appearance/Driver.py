@@ -296,6 +296,7 @@ def train(epoch):
                 writer.add_scalar('item_loss',per_item_loss,global_step=step)
             optimizer.step()
             optimizer.zero_grad()
+            roll_loss=0
 
         if batch_idx % args.log_interval == 0 and args.local_rank==0:
             printLoss('train', loss, epoch, batch_idx, len(data), genLoss)
