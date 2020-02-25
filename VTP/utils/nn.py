@@ -305,9 +305,9 @@ class Residual(nn.Module):
     '''
     def forward(self, x):
         x_ = x.clone()
-        x=F.leaky_relu(self.conv1())
-        x=F.leaky_relu(self.conv2())
-        x=F.leaky_relu(self.conv3())
+        x=F.leaky_relu(self.conv1(x))
+        x=F.leaky_relu(self.conv2(x))
+        x=F.leaky_relu(self.conv3(x))
         return x+x_
         
         
