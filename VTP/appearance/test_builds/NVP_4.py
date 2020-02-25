@@ -4,7 +4,7 @@ import torch
 import time
 from torch import nn, optim
 from torch.nn import functional as F
-from torch.nn import AvgPooll2d
+from torch.nn import AvgPool2d
 from torchvision import datasets, transforms
 from torchsummary import summary
 import sys,os
@@ -139,7 +139,7 @@ class VAE(nn.Module):
 
         for r in self.res_d:
             x = r(x)
-        
+
         return torch.sigmoid(x)
 
     def forward(self, x):
