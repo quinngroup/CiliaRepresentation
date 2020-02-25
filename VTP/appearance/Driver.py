@@ -259,6 +259,7 @@ def train(epoch):
         train_sampler.set_epoch(epoch)
     model.train()
     train_loss = 0
+    roll_loss = 0 
     for batch_idx, data in enumerate(train_loader):
         data = data.to(device)
         optimizer.zero_grad()
@@ -283,6 +284,7 @@ def train(epoch):
         with amp.scale_loss(loss, optimizer) as scaled_loss:
             scaled_loss.backward()
         train_loss += loss.item()
+        roll_loss += loss.item()
         genLoss = MODEL.loss_function(recon_batch, data, mu, logvar, z, pseudos, recon_pseudos, p_mu, p_logvar, p_z, gamma=0).item() / len(data)
         
         if (batch_idx+1)%args.roll == 0:
@@ -290,7 +292,7 @@ def train(epoch):
             # for an effective batch-size of [args.roll]*[args.batch_size]
             if(args.log!='!' and args.local_rank==0):
                 step=((epoch-1)*len(train_loader)+batch_idx)//args.roll
-                per_item_loss=loss.item()/len(data)
+                per_item_loss=roll_loss/(len(data)*args.roll)
                 writer.add_scalar('item_loss',per_item_loss,global_step=step)
             optimizer.step()
             optimizer.zero_grad()
