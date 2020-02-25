@@ -289,7 +289,7 @@ def train(epoch):
             # every [args.roll] iterations of batches [args.batch_size]
             # for an effective batch-size of [args.roll]*[args.batch_size]
             if(args.log!='!' and args.local_rank==0):
-                step=(epoch*len(train_loader)+batch_idx)//args.roll
+                step=((epoch-1)*len(train_loader)+batch_idx)//args.roll
                 per_item_loss=loss.item()/len(data)
                 writer.add_scalar('item_loss',per_item_loss,global_step=step)
             optimizer.step()
