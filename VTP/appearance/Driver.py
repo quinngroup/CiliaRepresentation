@@ -288,15 +288,15 @@ def train(epoch):
         if (batch_idx+1)%args.roll == 0:
             # every [args.roll] iterations of batches [args.batch_size]
             # for an effective batch-size of [args.roll]*[args.batch_size]
+            if(args.log!='!' and args.local_rank==0):
+                step=epoch*len(train_loader)+batch_idx
+                per_item_loss=loss.item()/len(data)
+                writer.add_scalar('item_loss',per_item_loss,global_step=step)
             optimizer.step()
             optimizer.zero_grad()
 
         if batch_idx % args.log_interval == 0 and args.local_rank==0:
             printLoss('train', loss, epoch, batch_idx, len(data), genLoss)
-        step=epoch*len(train_loader)+batch_idx
-        if(args.log!='!' and args.local_rank==0):
-            per_item_loss=loss.item()/len(data)
-            writer.add_scalar('item_loss',per_item_loss,global_step=step)
 
     '''Note in the "average loss" section we multiply by the constant scale
     since if the model is run in distributed mode, each singular gpu will only
