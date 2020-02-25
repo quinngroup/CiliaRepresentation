@@ -381,7 +381,7 @@ def test(epoch, max, startTime):
                 plt.show()
 
 if not args.distributed:
-    summary(model,(1,args.input_length,args.input_length))
+    summary(model.cuda(),(1,args.input_length,args.input_length))
 if(args.load == ''):
     for epoch in range(1, args.epochs + 1):
         if(not stopEarly):

@@ -41,25 +41,25 @@ class VAE(nn.Module):
         self.conv4C = nn.Conv2d(64, 64, 5,padding=2)
         self.conv4D = nn.Conv2d(64, 1, 5,padding=2)
 
-        self.pw_conv0 = nn.Conv2d(5, 256, 1)
+        self.pw_conv0 = nn.Conv2d(5, 32, 1)
 
-        self.res1_x = [Residual().cuda() for k in range(3)]
-        self.pw_conv1 = nn.Conv2d(256, 512, 1)
-        self.res2_x = [Residual(pixelwise_channel=512, conv_channel=128).cuda() for k in range(4)]
-        self.pw_conv2 = nn.Conv2d(512, 1024, 1)
-        self.res3_x = [Residual(pixelwise_channel=1024, conv_channel=256).cuda() for k in range(23)]
-        self.pw_conv3 = nn.Conv2d(1024, 2048, 1)
-        self.res4_x = [Residual(pixelwise_channel=2048, conv_channel=512).cuda() for k in range(3)]
+        self.res1_x = nn.ModuleList([Residual(pixelwise_channel=32, conv_channel=16,stride=2 if k==0 else 1) for k in range(3)])
+        self.pw_conv1 = nn.Conv2d(32, 64, 1)
+        self.res2_x = nn.ModuleList([Residual(pixelwise_channel=64, conv_channel=32,stride=2 if k==0 else 1) for k in range(2)])
+        self.pw_conv2 = nn.Conv2d(64, 256, 1)
+        self.res3_x = nn.ModuleList([Residual(pixelwise_channel=256, conv_channel=128,stride=2 if k==0 else 1) for k in range(1)])
+        self.pw_conv3 = nn.Conv2d(256, 1024, 1)
+        self.res4_x = nn.ModuleList([Residual(pixelwise_channel=1024, conv_channel=256,stride=2 if k==0 else 1) for k in range(1)])
 
 
-        self.fcc=nn.Linear(2048,1000)
+        self.fcc=nn.Linear(1024,1000)
 
         self.mean = nn.Linear(1000, lsdim)
         self.logvar = nn.Linear(1000, lsdim)
 
-        self.sbd=spatial_broadcast_decoder(input_length=self.input_length,device=self.device,lsdim=self.lsdim,channels=[64,64,64,64,256])
-        self.res_d = [Residual() for k in range(10)]
-
+        self.sbd=spatial_broadcast_decoder(input_length=self.input_length,device=self.device,lsdim=self.lsdim,channels=[64,64,64,64,64])
+        self.res_d = nn.ModuleList([Residual(pixelwise_channel=64, conv_channel=32) for k in range(10)])
+        self.pw_convd = nn.Conv2d(64, 1, 1)
         #Create an idle input for calling pseudo-inputs
 
     def reconstruct_x(self, x):
@@ -101,29 +101,25 @@ class VAE(nn.Module):
 
         for r in self.res1_x:
             x = r(x)
-        x = F.AvgPool2d(x,(2,2))
 
         x = F.leaky_relu(self.pw_conv1(x))
 
         for r in self.res2_x:
             x = r(x)
-        x = F.AvgPool2d(x,(2,2))
 
         x = F.leaky_relu(self.pw_conv2(x))
 
         for r in self.res3_x:
             x = r(x)
-        x = F.AvgPool2d(x,(2,2))
 
         x = F.leaky_relu(self.pw_conv3(x))
 
         for r in self.res4_x:
             x = r(x)
-        x = F.AvgPool2d(x,(2,2))
 
-        x = F.AvgPool2d(x,(7,7))
+        x = F.avg_pool2d(x,(8,8))
 
-        x=x.view(-1,2048)
+        x=x.view(-1,1024)
         x=F.leaky_relu(self.fcc(x))
 
         z_mean = self.mean(x)
@@ -140,6 +136,8 @@ class VAE(nn.Module):
 
         for r in self.res_d:
             x = r(x)
+        
+        x = F.leaky_relu(self.pw_convd(x))
 
         return torch.sigmoid(x)
 
