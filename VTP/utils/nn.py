@@ -307,7 +307,8 @@ class Residual(nn.Module):
     def forward(self, x):
         x_ = x.clone()
         if self.stride != 1:
-            x_=F.avg_pool2d(x_,(self.stride,self.stride))
+            x_=F.avg_pool2d(x_,(self.stride,self.stride)).cuda()
+        
         x=F.leaky_relu(self.conv1(x))
         x=F.leaky_relu(self.conv2(x))
         x=F.leaky_relu(self.conv3(x))
