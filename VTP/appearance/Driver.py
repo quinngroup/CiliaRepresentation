@@ -84,6 +84,8 @@ parser.add_argument('--reg2', type = float, default=5e-4, metavar='rg2',
                     help='coefficient for L2 weight decay')
 parser.add_argument('--repeat', action='store_true', default=False,
                     help='determines whether to enact further training after loading weights')
+parser.add_argument('--roll', type = int, default = 1, metavar='r',
+                    help='over how many batches to accumulate gradients')
 parser.add_argument('--save', type=str, default='', metavar='s',
                     help='saves the weights to a given filepath')
 parser.add_argument('--schedule', type = int, default=-1, metavar='sp',
@@ -282,7 +284,13 @@ def train(epoch):
             scaled_loss.backward()
         train_loss += loss.item()
         genLoss = MODEL.loss_function(recon_batch, data, mu, logvar, z, pseudos, recon_pseudos, p_mu, p_logvar, p_z, gamma=0).item() / len(data)
-        optimizer.step()
+        
+        if (batch_idx+1)%args.roll == 0:
+            # every [args.roll] iterations of batches [args.batch_size]
+            # for an effective batch-size of [args.roll]*[args.batch_size]
+            optimizer.step()
+            optimizer.zero_grad()
+
         if batch_idx % args.log_interval == 0 and args.local_rank==0:
             printLoss('train', loss, epoch, batch_idx, len(data), genLoss)
         step=epoch*len(train_loader)+batch_idx
