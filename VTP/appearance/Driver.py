@@ -3,7 +3,7 @@ from math import ceil
 import matplotlib.colors as colors
 import matplotlib.pyplot as plt
 from NVP import NVP
-from test_builds import NVP_1
+from test_builds import NVP_1, NVP_4
 from sklearn.cluster import DBSCAN
 from sklearn.manifold import TSNE
 from sklearn.preprocessing import StandardScaler
@@ -36,7 +36,7 @@ parser.add_argument('--beta', type=float, default=1.0, metavar='b',
 parser.add_argument('--dataset', type=str, default='nwd', metavar='D',
                     help='dataset selection for training and testing')
 parser.add_argument('--dbscan', action='store_true', default= False,
-                    help='to run dbscan clustering')      
+                    help='to run dbscan clustering')
 parser.add_argument('--epochs', type=int, default=10, metavar='N',
                     help='number of epochs to train (default: 10)')
 parser.add_argument('--failCount', type=str, default='r', metavar='fc',
@@ -44,7 +44,7 @@ parser.add_argument('--failCount', type=str, default='r', metavar='fc',
 parser.add_argument('--gamma', type = float, default=.05, metavar='g',
                     help='Pseudo-loss weight')
 parser.add_argument('--graph', action='store_true', default= False,
-                    help='flag to determine whether or not to generate a tensorboard graph')      
+                    help='flag to determine whether or not to generate a tensorboard graph')
 parser.add_argument('--input_height', type=int, default=128, metavar='ih',
                     help='height of each patch')
 parser.add_argument('--input_length', type=int, default=128, metavar='il',
@@ -54,7 +54,7 @@ parser.add_argument('--load', type=str, default='', metavar='l',
 parser.add_argument("--local_rank", type=int, default=0,
                     help='parameter for distributed training provided by launch script')
 parser.add_argument('--log', type=str, default='!', metavar='lg',
-                    help='flag to determine whether to use tensorboard for logging. Default \'!\' is read to mean no logging')      
+                    help='flag to determine whether to use tensorboard for logging. Default \'!\' is read to mean no logging')
 parser.add_argument('--log_interval', type=int, default=10, metavar='N',
                     help='how many batches to wait before logging training status')
 parser.add_argument('--log_image', type=int, default=0, metavar='N',
@@ -99,10 +99,10 @@ parser.add_argument('--tolerance', type = float, default=.1, metavar='tol',
 parser.add_argument('--tsne', action='store_true', default=False,
                     help='Uses TSNE projection instead of UMAP.')
 parser.add_argument('--vis', action='store_true', default= False,
-                    help='flag to determine whether or not to automatically visalize latent space')      
+                    help='flag to determine whether or not to automatically visalize latent space')
 parser.add_argument('--workers', default=4, type=int, metavar='N',
                     help='number of data loading workers (default: 4)')
-                    
+
 args = parser.parse_args()
 
 
@@ -121,13 +121,13 @@ if cuda:
 else:
     device = 'cpu'
     kwargs = {}
-    
+
 #Determine whether the process is being run as distributed
 args.distributed = False
 if 'WORLD_SIZE' in os.environ:
     worldCount=int(os.environ['WORLD_SIZE'])
     args.distributed = worldCount > 1
-    
+
 if args.distributed:
     # FOR DISTRIBUTED:  Set the device according to local_rank.
     torch.cuda.set_device(args.local_rank)
@@ -142,7 +142,7 @@ torch.backends.cudnn.benchmark = True
 #Manually sets random seed if requested
 if args.seed:
     torch.manual_seed(args.seed)
-    
+
 writer=None
 if(args.log!='!' and args.local_rank==0):
     if(args.log=='$'):
@@ -155,6 +155,8 @@ if args.model=='nvp':
     model = NVP(*arguments)
 elif args.model=='nvp1':
     model = NVP_1.NVP_1(*arguments)
+elif args.model=='nvp4':
+    model = NVP_4.NVP_4(*arguments)
 
 model.cuda()
 optimizer = torch.optim.Adam([{'params': model.vae.parameters()},
@@ -199,18 +201,18 @@ if args.distributed:
     test_sampler = torch.utils.data.distributed.DistributedSampler(testSet)
 
 train_loader = DataLoader(
-    trainSet, 
-    batch_size=args.batch_size, 
+    trainSet,
+    batch_size=args.batch_size,
     shuffle=(train_sampler is None),
-    num_workers=args.workers, 
-    pin_memory=True, 
+    num_workers=args.workers,
+    pin_memory=True,
     sampler=train_sampler)
 
 test_loader = DataLoader(
     testSet,
-    batch_size=args.batch_size, 
+    batch_size=args.batch_size,
     shuffle=False,
-    num_workers=args.workers, 
+    num_workers=args.workers,
     pin_memory=True,
     sampler=test_sampler)
 
@@ -266,13 +268,13 @@ def train(epoch):
             writer.add_images('reconstructions/'+str(image_step), np.concatenate((before[np.newaxis],after[np.newaxis])), image_step,dataformats='NCHW')
 
 
-        #For model module access, must reference model.module 
+        #For model module access, must reference model.module
         #if distributed to get through the distributed wrapper class
         if args.distributed:
             MODEL=model.module
         else:
             MODEL=model
-            
+
         pseudos=MODEL.pseudoGen.forward(MODEL.idle_input).view(-1,1,args.input_length,args.input_length).to(device)
         recon_pseudos, p_mu, p_logvar, p_z=model(pseudos)
         loss = MODEL.loss_function(recon_batch, data, mu, logvar, z,pseudos,recon_pseudos, p_mu, p_logvar, p_z)
@@ -288,9 +290,9 @@ def train(epoch):
             per_item_loss=loss.item()/len(data)
             writer.add_scalar('item_loss',per_item_loss,global_step=step)
 
-    '''Note in the "average loss" section we multiply by the constant scale 
-    since if the model is run in distributed mode, each singular gpu will only 
-    process *half* the data but would otherwise normalize by the length of the entire dataset    
+    '''Note in the "average loss" section we multiply by the constant scale
+    since if the model is run in distributed mode, each singular gpu will only
+    process *half* the data but would otherwise normalize by the length of the entire dataset
     '''
     if args.local_rank==0:
         printLoss('average', train_loss, epoch)
@@ -309,7 +311,7 @@ def test(epoch, max, startTime):
         MODEL=model.module
     else:
         MODEL=model
-    pseudos=MODEL.pseudoGen.forward(MODEL.idle_input).view(-1,1,args.input_length,args.input_length).to(device)             
+    pseudos=MODEL.pseudoGen.forward(MODEL.idle_input).view(-1,1,args.input_length,args.input_length).to(device)
     recon_pseudos, p_mu, p_logvar, p_z=model(pseudos)
     with torch.no_grad():
         for i, data in enumerate(test_loader):
@@ -334,7 +336,7 @@ def test(epoch, max, startTime):
             failedEpochs += 1
             if failedEpochs >= args.patience:
                 stopEarly = True
-                
+
                 epoch = max
         elif args.failCount == 'r':
             failedEpochs = 0
@@ -346,7 +348,7 @@ def test(epoch, max, startTime):
                         }, args.save)
         print("--- %s seconds ---" % (time.time() - startTime))
         cmap = colors.ListedColormap(['#e6194B', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#42d4f4', '#f032e6', '#bfef45', '#fabebe'])
-        
+
         #Handling different dimensionalities
         if(args.vis):
             if (args.lsdim < 3) :
@@ -360,11 +362,11 @@ def test(epoch, max, startTime):
                 z2 = torch.Tensor.cpu(zTensor[:, 1]).numpy()
                 z3 = torch.Tensor.cpu(zTensor[:, 2]).numpy()
                 scatterPlot = ax.scatter(z1, z2, z3, s = 4) #Regular 3dim plot
-            elif args.tsne:    
-                Z_embedded = TSNE(n_components=2, verbose=1).fit_transform(zTensor.cpu())        
+            elif args.tsne:
+                Z_embedded = TSNE(n_components=2, verbose=1).fit_transform(zTensor.cpu())
                 z1 = Z_embedded[:, 0]
                 z2 = Z_embedded[:, 1]
-                scatterPlot = plt.scatter(z1, z2, s = 4) #TSNE projection for >3dim 
+                scatterPlot = plt.scatter(z1, z2, s = 4) #TSNE projection for >3dim
             else:
                 reducer = umap.UMAP()
                 Z_embedded = reducer.fit_transform(zTensor.cpu())
@@ -377,7 +379,7 @@ def test(epoch, max, startTime):
             for x in range(t):
                 plt.matshow(temp[x].numpy())
                 plt.show()
-                
+
 if not args.distributed:
     summary(model,(1,args.input_length,args.input_length))
 if(args.load == ''):
@@ -394,7 +396,7 @@ if(args.repeat):
     for epoch in range(1, args.epochs + 1):
         train(epoch)
         test(epoch, args.epochs, startTime)
-        
+
 if(args.log!='!' and args.local_rank==0):
     if args.graph:
         dummy = torch.autograd.Variable(torch.Tensor(1,1,128,128), requires_grad=True).to(device)
