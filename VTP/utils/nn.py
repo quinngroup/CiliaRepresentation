@@ -90,7 +90,7 @@ class spatial_broadcast_decoder(nn.Module):
     @param kernel_size size of size-preserving kernel. Must be odd.
     @param channels list of output-channels for each of the four size-preserving convolutional layers
     '''
-    def __init__(self,input_length,device,lsdim,kernel_size=3,channels=[64,64,64,64]):
+    def __init__(self,input_length,device,lsdim,kernel_size=3,channels=[64,64,64,64,1]):
         super(spatial_broadcast_decoder,self).__init__()
         self.input_length=input_length
         self.device=device
@@ -102,7 +102,7 @@ class spatial_broadcast_decoder(nn.Module):
         self.conv2 = nn.Conv2d(channels[0], channels[1], kernel_size=kernel_size, padding=padding)
         self.conv3 = nn.Conv2d(channels[1], channels[2], kernel_size=kernel_size, padding=padding)
         self.conv4 = nn.Conv2d(channels[2], channels[3], kernel_size=kernel_size, padding=padding)
-        self.conv5 = nn.Conv2d(channels[3], 1, 1)
+        self.conv5 = nn.Conv2d(channels[3], channels[4], 1)
 
     '''
     Applies the spatial broadcast decoder to a code z
