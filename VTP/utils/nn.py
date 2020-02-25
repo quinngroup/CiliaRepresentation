@@ -291,10 +291,10 @@ ResNet 'deeper' block as used in ResNet-110
 @author Meekail Zain
 """
 class Residual(nn.Module):
-    def __init__(self,pixelwise_channel=256,conv_channel=64,kernel_size=3):
+    def __init__(self,device,pixelwise_channel=256,conv_channel=64,kernel_size=3):
         super(Residual, self).__init__()
         self.conv1=nn.Conv2d(pixelwise_channel,conv_channel,1)
-        self.conv2=nn.Conv2d(conv_channel,conv_channel,kernel_size)
+        self.conv2=nn.Conv2d(conv_channel,conv_channel,kernel_size,padding=(kernel_size-1)//2)
         self.conv3=nn.Conv2d(conv_channel,pixelwise_channel,1)
 
     '''
@@ -304,6 +304,7 @@ class Residual(nn.Module):
     @return the output of the ResNetBlock
     '''
     def forward(self, x):
+        x.to(device)
         x_ = x.clone()
         x=F.leaky_relu(self.conv1(x))
         x=F.leaky_relu(self.conv2(x))
