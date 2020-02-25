@@ -43,13 +43,13 @@ class VAE(nn.Module):
 
         self.pw_conv0 = nn.Conv2d(5, 256, 1)
 
-        self.res1_x = [Residual() for k in range(3)]
+        self.res1_x = [Residual().cuda() for k in range(3)]
         self.pw_conv1 = nn.Conv2d(256, 512, 1)
-        self.res2_x = [Residual(pixelwise_channel=512, conv_channel=128) for k in range(4)]
+        self.res2_x = [Residual(pixelwise_channel=512, conv_channel=128).cuda() for k in range(4)]
         self.pw_conv2 = nn.Conv2d(512, 1024, 1)
-        self.res3_x = [Residual(pixelwise_channel=1024, conv_channel=256) for k in range(23)]
+        self.res3_x = [Residual(pixelwise_channel=1024, conv_channel=256).cuda() for k in range(23)]
         self.pw_conv3 = nn.Conv2d(1024, 2048, 1)
-        self.res4_x = [Residual(pixelwise_channel=2048, conv_channel=512) for k in range(3)]
+        self.res4_x = [Residual(pixelwise_channel=2048, conv_channel=512).cuda() for k in range(3)]
 
 
         self.fcc=nn.Linear(2048,1000)
@@ -101,27 +101,27 @@ class VAE(nn.Module):
 
         for r in self.res1_x:
             x = r(x)
-        x = F.AvgPooll2d(x,(2,2))
+        x = F.AvgPool2d(x,(2,2))
 
         x = F.leaky_relu(self.pw_conv1(x))
 
         for r in self.res2_x:
             x = r(x)
-        x = F.AvgPooll2d(x,(2,2))
+        x = F.AvgPool2d(x,(2,2))
 
         x = F.leaky_relu(self.pw_conv2(x))
 
         for r in self.res3_x:
             x = r(x)
-        x = F.AvgPooll2d(x,(2,2))
+        x = F.AvgPool2d(x,(2,2))
 
         x = F.leaky_relu(self.pw_conv3(x))
 
         for r in self.res4_x:
             x = r(x)
-        x = F.AvgPooll2d(x,(2,2))
+        x = F.AvgPool2d(x,(2,2))
 
-        x = F.AvgPooll2d(x,(7,7))
+        x = F.AvgPool2d(x,(7,7))
 
         x=x.view(-1,2048)
         x=F.leaky_relu(self.fcc(x))
