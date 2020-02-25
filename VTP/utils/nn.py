@@ -293,6 +293,7 @@ ResNet 'deeper' block as used in ResNet-110
 class Residual(nn.Module):
     def __init__(self,pixelwise_channel=256,conv_channel=64,kernel_size=3,stride=1):
         super(Residual, self).__init__()
+        self.stride=stride
         self.conv1=nn.Conv2d(pixelwise_channel,conv_channel,1)
         self.conv2=nn.Conv2d(conv_channel,conv_channel,kernel_size,padding=(kernel_size-1)//2,stride=stride)
         self.conv3=nn.Conv2d(conv_channel,pixelwise_channel,1)
@@ -305,7 +306,7 @@ class Residual(nn.Module):
     '''
     def forward(self, x):
         x_ = x.clone()
-        if stride != 1:
+        if self.stride != 1:
             x_=F.avg_pool2d(x_,(stride,stride))
         x=F.leaky_relu(self.conv1(x))
         x=F.leaky_relu(self.conv2(x))
