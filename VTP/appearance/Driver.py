@@ -66,6 +66,8 @@ parser.add_argument('--lr', type = float, default=1e-5, metavar='lr',
 parser.add_argument('--lsdim', type = int, default=10, metavar='ld',
                     help='sets the number of dimensions in the latent space. should be >1. If  <3, will generate graphical representation of latent without TSNE projection')
                     #current implementation may not be optimal for dims above 4
+parse.add_argument('--min_lr', type = float, default=0, metavar='minlr',
+                    help='sets the lower bound on the learning rate of all param groups')
 parser.add_argument('--model', type=str, default='nvp',
                     help='determines which model to use')
 parser.add_argument('--no_cuda', action='store_true', default=False,
@@ -94,6 +96,8 @@ parser.add_argument('--seed', type=int, default=None, metavar='s',
                     help='manual random seed (default: None)')
 parser.add_argument('--source', type=str, default='..\data', metavar='S',
                     help='directory containing source files')
+parse.add_argument('--start_lr_schedule', type = int, default=1, metavar='stlrsp'
+                    help='what epoch at which to start the learning rate scheduling')
 parser.add_argument('--test_split', type=float, default=.2, metavar='ts',
                     help='portion of data reserved for testing')
 parser.add_argument('--tolerance', type = float, default=.1, metavar='tol',
@@ -230,7 +234,7 @@ lastLoss = 0
 
 scheduler=None
 if(args.schedule>0):
-    scheduler=lr_scheduler.ReduceLROnPlateau(optimizer,verbose=True,patience=args.schedule)
+            scheduler=lr_scheduler.ReduceLROnPlateau(optimizer, min_lr = args.min_lr, verbose=True, patience=args.schedule)
 
 
 scale=1
@@ -259,7 +263,7 @@ def train(epoch):
         train_sampler.set_epoch(epoch)
     model.train()
     train_loss = 0
-    roll_loss = 0 
+    roll_loss = 0
     for batch_idx, data in enumerate(train_loader):
         data = data.to(device)
         recon_batch, mu, logvar, z = model(data)
@@ -285,7 +289,7 @@ def train(epoch):
         train_loss += loss.item()
         roll_loss += loss.item()
         genLoss = MODEL.loss_function(recon_batch, data, mu, logvar, z, pseudos, recon_pseudos, p_mu, p_logvar, p_z, gamma=0).item() / len(data)
-        
+
         if (batch_idx+1)%args.roll == 0:
             # every [args.roll] iterations of batches [args.batch_size]
             # for an effective batch-size of [args.roll]*[args.batch_size]
@@ -307,7 +311,8 @@ def train(epoch):
     if args.local_rank==0:
         printLoss('average', train_loss, epoch)
     if(args.schedule>0):
-          scheduler.step(scale*train_loss / len(train_loader.dataset))
+        if(epochs>=start_lr_schedule):
+            scheduler.step(scheduler.step(scale*train_loss / len(train_loader.dataset)))
 
 def test(epoch, max, startTime):
     model.eval()
