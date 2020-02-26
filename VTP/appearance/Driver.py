@@ -96,7 +96,7 @@ parser.add_argument('--seed', type=int, default=None, metavar='s',
                     help='manual random seed (default: None)')
 parser.add_argument('--source', type=str, default='..\data', metavar='S',
                     help='directory containing source files')
-parse.add_argument('--start_lr_schedule', type = int, default=1, metavar='stlrsp'
+parse.add_argument('--delay_lr_schedule', type = int, default=1, metavar='dlrsp'
                     help='what epoch at which to start the learning rate scheduling')
 parser.add_argument('--test_split', type=float, default=.2, metavar='ts',
                     help='portion of data reserved for testing')
@@ -106,6 +106,8 @@ parser.add_argument('--tsne', action='store_true', default=False,
                     help='Uses TSNE projection instead of UMAP.')
 parser.add_argument('--vis', action='store_true', default= False,
                     help='flag to determine whether or not to automatically visalize latent space')
+parser.add_argument('--warmup_period', type=int, default=1, metavar="wp",
+                    help='the constant by which we increment the learning rate for gradual warmup')
 parser.add_argument('--workers', default=4, type=int, metavar='N',
                     help='number of data loading workers (default: 4)')
 
@@ -311,7 +313,7 @@ def train(epoch):
     if args.local_rank==0:
         printLoss('average', train_loss, epoch)
     if(args.schedule>0):
-        if(epochs>=start_lr_schedule):
+        if(epochs>=delay_lr_schedule):
             scheduler.step(scheduler.step(scale*train_loss / len(train_loader.dataset)))
 
 def test(epoch, max, startTime):
