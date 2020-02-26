@@ -1,10 +1,15 @@
 import numpy as np
+from scipy.integrate import odeint
+
+NUM_POINTS = 23
 
 # generate (20000,10) numpy array of random numbers over normal distribution
+'''
 sigma = 5
 mu = 0
 starting_points = sigma * np.random.randn(20000,10) + mu
 np.save("starting_points", starting_points)
+'''
 
 # create functions over R10 vector field
 def vector_field(v):
@@ -18,6 +23,9 @@ def vector_field(v):
                      -3.6*math.cos(v[8]) + math.sqrt(math.pow(v[1], 2) + math.pow(v[3] - v[4], 2)),
                      -.4*math.sin(math.pow(v[2], 2)) + .6 * math.exp(v[5]),
                      v[3]/(np.linalg.norm(v) + math.pow(v[3] - v[7], 2) + 1)])
+vector_field = np.vectorize(vector_field)
 
-# use scipi neural integrator to generate paths 
-
+# use scipy integrator to generate paths 
+starting_points = np.load("starting_points")
+paths = odeint(vector_field, starting_points, np.arange(NUM_POINTS))
+print(paths.shape)
