@@ -66,7 +66,7 @@ parser.add_argument('--lr', type = float, default=1e-5, metavar='lr',
 parser.add_argument('--lsdim', type = int, default=10, metavar='ld',
                     help='sets the number of dimensions in the latent space. should be >1. If  <3, will generate graphical representation of latent without TSNE projection')
                     #current implementation may not be optimal for dims above 4
-parse.add_argument('--min_lr', type = float, default=0, metavar='minlr',
+parser.add_argument('--min_lr', type = float, default=0, metavar='minlr',
                     help='sets the lower bound on the learning rate of all param groups')
 parser.add_argument('--model', type=str, default='nvp',
                     help='determines which model to use')
@@ -96,7 +96,7 @@ parser.add_argument('--seed', type=int, default=None, metavar='s',
                     help='manual random seed (default: None)')
 parser.add_argument('--source', type=str, default='..\data', metavar='S',
                     help='directory containing source files')
-parse.add_argument('--delay_lr_schedule', type = int, default=1, metavar='dlrsp',
+parser.add_argument('--delay_lr_schedule', type = int, default=1, metavar='dlrsp',
                     help='what epoch at which to start the learning rate scheduling')
 parser.add_argument('--test_split', type=float, default=.2, metavar='ts',
                     help='portion of data reserved for testing')
