@@ -96,7 +96,7 @@ parser.add_argument('--seed', type=int, default=None, metavar='s',
                     help='manual random seed (default: None)')
 parser.add_argument('--source', type=str, default='..\data', metavar='S',
                     help='directory containing source files')
-parse.add_argument('--delay_lr_schedule', type = int, default=1, metavar='dlrsp'
+parse.add_argument('--delay_lr_schedule', type = int, default=1, metavar='dlrsp',
                     help='what epoch at which to start the learning rate scheduling')
 parser.add_argument('--test_split', type=float, default=.2, metavar='ts',
                     help='portion of data reserved for testing')
