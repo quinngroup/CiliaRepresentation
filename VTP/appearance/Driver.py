@@ -3,7 +3,7 @@ from math import ceil
 import matplotlib.colors as colors
 import matplotlib.pyplot as plt
 from NVP import NVP
-from test_builds import NVP_1, NVP_4, NVP_5
+from test_builds import NVP_1, NVP_4, NVP_5, NVP_6, NVP_7
 from sklearn.cluster import DBSCAN
 from sklearn.manifold import TSNE
 from sklearn.preprocessing import StandardScaler
@@ -167,6 +167,12 @@ elif args.model=='nvp4':
     model = NVP_4.NVP_4(*arguments)
 elif args.model=='nvp5':
     model = NVP_5.NVP_5(*arguments)
+elif args.model=='nvp6':
+    model = NVP_6.NVP_6(*arguments)
+elif args.model=='nvp7':
+    model = NVP_7.NVP_7(*arguments)
+
+
 
 model.cuda()
 optimizer = torch.optim.Adam([{'params': model.vae.parameters()},
