@@ -305,7 +305,7 @@ class Residual(nn.Module):
     @return the output of the ResNetBlock
     '''
     def forward(self, x):
-        x_ = x.clone()
+        x_ = x
         if self.stride != 1:
             x_=F.avg_pool2d(x_,(self.stride,self.stride)).cuda()
         
