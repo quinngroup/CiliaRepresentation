@@ -24,7 +24,7 @@ def clipper(filename, clipLength,mmap,rng):
     count=0
     for i in randomFrames:
         output[count] = data[i]
-        count++;
+        count++
         
     return output
     
