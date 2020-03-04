@@ -7,6 +7,10 @@ parser.add_argument('--encoder', type=str, default=None,
     help='choose the desired encoder architecture')
 parser.add_argument('--decoder', type=str, default=None, 
     help='choose the desired decoder architecture')
+parser.add_argument('--trainsource', type=str, default=None,
+    help='directory containing source training files')
+parser.add_argument('--testsource', type=str, default=None,
+    help='directory containing source testing files')
 args = parser.parse_args()
 
 model = VTP_D(encoder=args.encoder, decoder=args.decoder)
