@@ -3,7 +3,7 @@ from math import ceil
 import matplotlib.colors as colors
 import matplotlib.pyplot as plt
 from NVP import NVP
-from test_builds import NVP_1, NVP_4, NVP_5, NVP_6, NVP_7
+from test_builds import NVP_1, NVP_4, NVP_5, NVP_6, NVP_7, NVP_BatchNorm
 from sklearn.cluster import DBSCAN
 from sklearn.manifold import TSNE
 from sklearn.preprocessing import StandardScaler
@@ -106,8 +106,10 @@ parser.add_argument('--tsne', action='store_true', default=False,
                     help='Uses TSNE projection instead of UMAP.')
 parser.add_argument('--vis', action='store_true', default= False,
                     help='flag to determine whether or not to automatically visalize latent space')
-parser.add_argument('--warmup_period', type=int, default=1, metavar="wp",
-                    help='the constant by which we increment the learning rate for gradual warmup')
+parser.add_argument('--warmup_epochs', type=int, default=0, metavar='we',
+                    help='number of epochs for gradual warmup. Setting to 0 disables warmup (default: 5)')
+parser.add_argument('--warmup_initial', type=float, default=1, metavar="wi",
+                    help='proportion of the learning rate to start with at warmup (default: 1/6)')
 parser.add_argument('--workers', default=4, type=int, metavar='N',
                     help='number of data loading workers (default: 4)')
 
@@ -171,13 +173,21 @@ elif args.model=='nvp6':
     model = NVP_6.NVP_6(*arguments)
 elif args.model=='nvp7':
     model = NVP_7.NVP_7(*arguments)
-
+elif args.model=='nvpb':
+    model = NVP_BatchNorm.NVP_BatchNorm(*arguments)
 
 
 model.cuda()
-optimizer = torch.optim.Adam([{'params': model.vae.parameters()},
-                        {'params': model.pseudoGen.parameters(), 'lr': args.plr}],
-                        lr=args.lr, weight_decay=args.reg2)
+
+optimizer = None
+if args.warmup_epochs > 0:
+    optimizer = torch.optim.Adam([{'params': model.vae.parameters()},
+                                  {'params': model.pseudoGen.parameters(), 'lr': args.plr * args.warmup_initial}],
+                                 lr=args.lr * args.warmup_initial, weight_decay=args.reg2)     
+else:
+    optimizer = torch.optim.Adam([{'params': model.vae.parameters()},
+                                  {'params': model.pseudoGen.parameters(), 'lr': args.plr}],
+                                 lr=args.lr, weight_decay=args.reg2)
 
 #Amp optional fp optimization
 model, optimizer = amp.initialize(model, optimizer, opt_level="O0")
@@ -243,9 +253,10 @@ failedEpochs=0
 lastLoss = 0
 
 scheduler=None
-if(args.schedule>0):
-            scheduler=lr_scheduler.ReduceLROnPlateau(optimizer, min_lr = args.min_lr, verbose=True, patience=args.schedule)
-
+warmupScheduler = None
+if args.warmup_epochs > 0:
+    lamb = lambda epoch: min(1/args.warmup_initial, 1 + (1-args.warmup_initial)*epoch/(args.warmup_initial*args.warmup_epochs))
+    warmupScheduler = lr_scheduler.LambdaLR(optimizer, lr_lambda=lamb)
 
 scale=1
 if args.distributed:
@@ -269,6 +280,7 @@ def printLoss(phase, loss, epoch=None, batch_idx=None, data_length=None, genLoss
 
 def train(epoch):
     before, after=None,None
+    global scheduler
     if args.distributed:
         train_sampler.set_epoch(epoch)
     model.train()
@@ -320,9 +332,13 @@ def train(epoch):
     '''
     if args.local_rank==0:
         printLoss('average', train_loss, epoch)
+    if epoch <= args.warmup_epochs:
+        warmupScheduler.step()
     if(args.schedule>0):
-        if(epochs>=delay_lr_schedule):
-            scheduler.step(scheduler.step(scale*train_loss / len(train_loader.dataset)))
+        if epoch == args.warmup_epochs:
+            scheduler=lr_scheduler.ReduceLROnPlateau(optimizer, min_lr = args.min_lr, verbose=True, patience=args.schedule)
+        if(epoch>=delay_lr_schedule):
+            scheduler.step(scale*train_loss / len(train_loader.dataset))
 
 def test(epoch, max, startTime):
     model.eval()
