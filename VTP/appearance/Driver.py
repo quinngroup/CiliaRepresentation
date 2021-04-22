@@ -3,7 +3,7 @@ from math import ceil
 import matplotlib.colors as colors
 import matplotlib.pyplot as plt
 from NVP import NVP
-from test_builds import NVP_1, NVP_4
+from test_builds import NVP_1, NVP_4, NVP_5, NVP_6, NVP_7
 from sklearn.cluster import DBSCAN
 from sklearn.manifold import TSNE
 from sklearn.preprocessing import StandardScaler
@@ -66,7 +66,7 @@ parser.add_argument('--lr', type = float, default=1e-5, metavar='lr',
 parser.add_argument('--lsdim', type = int, default=10, metavar='ld',
                     help='sets the number of dimensions in the latent space. should be >1. If  <3, will generate graphical representation of latent without TSNE projection')
                     #current implementation may not be optimal for dims above 4
-parse.add_argument('--min_lr', type = float, default=0, metavar='minlr',
+parser.add_argument('--min_lr', type = float, default=0, metavar='minlr',
                     help='sets the lower bound on the learning rate of all param groups')
 parser.add_argument('--model', type=str, default='nvp',
                     help='determines which model to use')
@@ -96,7 +96,7 @@ parser.add_argument('--seed', type=int, default=None, metavar='s',
                     help='manual random seed (default: None)')
 parser.add_argument('--source', type=str, default='..\data', metavar='S',
                     help='directory containing source files')
-parse.add_argument('--start_lr_schedule', type = int, default=1, metavar='stlrsp'
+parser.add_argument('--delay_lr_schedule', type = int, default=1, metavar='dlrsp',
                     help='what epoch at which to start the learning rate scheduling')
 parser.add_argument('--test_split', type=float, default=.2, metavar='ts',
                     help='portion of data reserved for testing')
@@ -106,6 +106,8 @@ parser.add_argument('--tsne', action='store_true', default=False,
                     help='Uses TSNE projection instead of UMAP.')
 parser.add_argument('--vis', action='store_true', default= False,
                     help='flag to determine whether or not to automatically visalize latent space')
+parser.add_argument('--warmup_period', type=int, default=1, metavar="wp",
+                    help='the constant by which we increment the learning rate for gradual warmup')
 parser.add_argument('--workers', default=4, type=int, metavar='N',
                     help='number of data loading workers (default: 4)')
 
@@ -163,6 +165,14 @@ elif args.model=='nvp1':
     model = NVP_1.NVP_1(*arguments)
 elif args.model=='nvp4':
     model = NVP_4.NVP_4(*arguments)
+elif args.model=='nvp5':
+    model = NVP_5.NVP_5(*arguments)
+elif args.model=='nvp6':
+    model = NVP_6.NVP_6(*arguments)
+elif args.model=='nvp7':
+    model = NVP_7.NVP_7(*arguments)
+
+
 
 model.cuda()
 optimizer = torch.optim.Adam([{'params': model.vae.parameters()},
@@ -311,7 +321,7 @@ def train(epoch):
     if args.local_rank==0:
         printLoss('average', train_loss, epoch)
     if(args.schedule>0):
-        if(epochs>=start_lr_schedule):
+        if(epochs>=delay_lr_schedule):
             scheduler.step(scheduler.step(scale*train_loss / len(train_loader.dataset)))
 
 def test(epoch, max, startTime):

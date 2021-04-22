@@ -125,9 +125,22 @@ class VAE(nn.Module):
         z_logvar = F.elu(self.logvar(x), -1.*self.logvar_bound)
         return z_mean, z_logvar
 
-    def reparameterize(self, mu, logvar):
+	# Samples at least one z~Q(mu,logvar)
+    # Can sample multiple by increasing n
+    # Returns in shape [batch_size,num_samples,lsdim]
+    def reparameterize(self, mu, logvar, n=1):
+      
+        # Converts log-variance to standard-deviation
         std = torch.exp(0.5*logvar)
+        
+        # Tiles standard deviation and mean along new axis for sampling multiple z vectors
+        std = std.unsqueeze(1).repeat(1,n,1)
+        mu = mu.unsqueeze(1).repeat(1,n,1)
+        
+        # Samples from a unit gaussian in the shape of the provided standard-deviation vector
         eps = torch.randn_like(std)
+        
+        # Constructs multiple z vectors from random noise
         return eps.mul(std).add_(mu)
 
     def decode(self, z):
@@ -167,81 +180,87 @@ class NVP(nn.Module):
     def forward(self, x):
         return self.vae.forward(x)
   
-    def loss_function(self, recon_x, x, mu, logvar, z_q, pseudo,recon_pseudo, p_mu, p_logvar, p_z, gamma=None):
-        reconstructionLoss = F.mse_loss(recon_x.view(-1,self.input_length*self.input_length), x.view(-1, self.input_length*self.input_length), reduction = 'sum')
+    # Note that this loss *sums* instead of averages, so scale learning rate with
+    # the expected batch size to account for missing averaging. This is done to ensure consistent
+    # learning across variable batch sizes without needing to calculate them live.
+    def loss(self, recon_x, x, mu, logvar, z_q, pseudo,recon_pseudo, p_mu, p_logvar, p_z, gamma=self.gamma):
+        
+        # Reshape inputs for easier comparison
+        x = x.view(-1,self.input_length*self.input_length)
+        recon_x = recon_x.view(-1,self.input_length*self.input_length)
+        
+        reconstructionLoss = F.mse_loss(recon_x, x, reduction = 'sum')
 
+		# Log-likelihood of a given z-sample originating from the prior
+        # [batch_size, sample_size]
         log_p_z = self.log_p_z(z_q)
-        log_q_z = torch.sum(self.log_Normal_diag(z_q, mu, logvar, dim=1),0)
-        KL = -(log_p_z - log_q_z)
+        
+        # Log-likelihood of a given z-sample originating from the posterior
+        # [batch_size, sample_size]
+        log_q_z = self.log_Normal_diag(z_q, mu, logvar, dim=2)
 
-        pseudoReconstructionLoss = F.mse_loss(recon_pseudo.view(-1,self.input_length*self.input_length), pseudo.view(-1, self.input_length*self.input_length), reduction = 'sum')
+        # Monte Carlo estimation of KL divergence from posterior to prior
+        # computed over several samples per posterior
+        KL = (log_q_z - log_p_z).mean(axis=1).sum()
+
+        
+        # Reshape inputs for easier comparison
+        pseudo = pseudo.view(-1,self.input_length*self.input_length)
+        recon_pseudo = recon_pseudo.view(-1,self.input_length*self.input_length)
+
+        pseudoReconstructionLoss = F.mse_loss(recon_pseudo, pseudo, reduction = 'sum')
 
         plog_p_z = self.log_p_z(p_z)
-        plog_q_z = torch.sum(self.log_Normal_diag(p_z, p_mu, p_logvar, dim=1),0)
-        pKL= -(plog_p_z - plog_q_z)
+        plog_q_z = self.log_Normal_diag(p_z, p_mu, p_logvar, dim=2)
+        #KL divergence from posterior to prior for pseudoinputs
+        pKL= (plog_q_z - plog_p_z).mean(axis=1).sum()
 
-        if gamma is None:
-            gamma=self.gamma
-        return (reconstructionLoss + self.beta*KL)+(x.shape[0] * gamma / self.pseudos)*(pseudoReconstructionLoss + self.beta*pKL)
+        # L(Original Data)+gamma*L(Pseudo Inputs)
+        lossSum = (reconstructionLoss + self.beta*KL)+(gamma*self.batch_size / self.pseudos)*(pseudoReconstructionLoss + self.beta*pKL)
+        return lossSum
         
-    def bayesian_loss(self, recon_x, x, mu, logvar, z_q, pseudo,recon_pseudo, p_mu, p_logvar, p_z, gamma=None):
-        reconstructionLoss = F.mse_loss(recon_x.view(-1,self.input_length*self.input_length), x.view(-1, self.input_length*self.input_length), reduction = 'sum')
-
-        log_p_z = self.log_p_z(z_q)
-        log_q_z = torch.sum(self.log_Normal_diag(z_q, mu, logvar, dim=1),0)
-        KL = -(log_p_z - log_q_z)
-
-        pseudoReconstructionLoss = F.mse_loss(recon_pseudo.view(-1,self.input_length*self.input_length), pseudo.view(-1, self.input_length*self.input_length), reduction = 'sum')
-
-        plog_p_z = self.log_p_z(p_z)
-        plog_q_z = torch.sum(self.log_Normal_diag(p_z, p_mu, p_logvar, dim=1),0)
-        pKL= -(plog_p_z - plog_q_z)
-
-        if gamma is None:
-            gamma=self.gamma
-        lossSum = (reconstructionLoss + self.beta*KL)+(gamma / self.pseudos)*(pseudoReconstructionLoss + self.beta*pKL)
-        lossAverage = lossSum / (x.shape[0] + gamma)
-        return x.shape[0] * lossAverage
-        
-    def log_Normal_diag(self, x, mean, log_var, average=False, dim=None):
-        #print(log_var)
-        #T:(batch-size, num-pseudos, lsdim) 
-        #T[i,j,k]=element i, marginal probability along axis k for posterior j
+    # Computes the log-likelihood of an `x` originating from a mixture of Gaussian distributions
+    # parameterized by `mean` and `log_var` whose shapes are [batch_size, num_psuedos, lsdim]
+    def log_Normal_diag(self, x, mean, log_var, dim=None):
+      
+        # T:(batch-size, num-pseudos, sample_size, lsdim) 
+        # T[i,j,k,l]=element i, marginal probability along axis l in sample k for posterior j
         log_normal = -0.5 * ( log_var + torch.pow( x - mean, 2 ) / torch.exp( log_var ) )
 
-        #T: (batch-size, num-pseudos)
-        #T[i,j]=log probability that element i originates from posterior j
-        if average:
-
-            return torch.mean( log_normal, dim )
-
-        else:
-
-            return torch.sum( log_normal, dim )
+        # T: (batch-size, num-pseudos, sample_size)
+        # T[i,j,k]=log probability that sample k of element i originates from posterior j
+        return torch.sum( log_normal, dim )
 
     def log_p_z(self,z):
+      
         # calculate params
         X = self.pseudoGen.forward(self.idle_input)
 
         # calculate params for given data
-        z_p_mean, z_p_logvar = self.vae.encoder(X.view(-1,1,self.input_length,self.input_length))  # C x M
+        z_p_mean, z_p_logvar = self.vae.encoder(X.view(-1,1,self.input_length,self.input_length))
 
-        #INCLUDE LATEX WRITEUP
+        # [batch_size, 1, sample_size, lsdim]
         z_expand = z.unsqueeze(1)
         #z_expand = z_expand.repeat(1, self.pseudos, 1)
         
-        means = z_p_mean.unsqueeze(0)
+        # [1, num_pseudos, 1, lsdim]
+        means = means.unsqueeze(0)
+        means = means.unsqueeze(2)
         #means = means.repeat(z_expand.shape[0], 1, 1)
         
-        logvars = z_p_logvar.unsqueeze(0)
-        #logvars= means.repeat(z_expand.shape[0], 1, 1)
+        # [1, num_pseudos, 1, lsdim]
+        logvars = logvars.unsqueeze(0)
+        logvars = logvars.unsqueeze(2)
         
-        a = self.log_Normal_diag(z_expand, means, logvars, dim=2) - math.log(self.pseudos)  # MB x C
+        # Computes log-likelihood across all components (weighted by number of pseudos)
+        a = log_Normal_diag(z_expand, means, logvars, dim=3) - math.log(self.pseudos)
         
-        #We will scale by the maximum posterior probabilities in order to ensure numerical stability in later stages
+        # We will scale/shift by the maximum posterior probabilities in order to ensure numerical 
+        # stability when calculating the exp in the final step 
         a_max, _ = torch.max(a, 1)  # MB x 1
 
-        # calculate log-sum-exp
-        #Use of a_max cancels out but is kept for numerical stability of exp operation
-        log_prior = a_max + torch.log(torch.sum(torch.exp(a - a_max.unsqueeze(1)), 1))  # MB x 1
-        return torch.sum(log_prior, 0)
+        # Calculate the log-likelihood across all pseudo-inputs by taking the logarithm
+        # of the sum of individual likelihoods across each pseudo-input posterior (component of the prior).
+        # Use of a_max cancels out but is kept for numerical stability of exp operation
+        log_prior = a_max + torch.log(torch.sum(torch.exp(a - a_max.unsqueeze(1)), 1))
+        return log_prior
